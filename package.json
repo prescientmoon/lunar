@@ -1,0 +1,26 @@
+{
+    "name": "lunarlang",
+    "version": "0.0.1",
+    "description": "",
+    "main": "src/index.ts",
+    "keywords": [
+        "cli"
+    ],
+    "author": "Matei Adriel",
+    "license": "MIT",
+    "dependencies": {
+        "@types/node": "^12.11.1",
+        "chalk": "^2.4.2",
+        "commander": "^3.0.2",
+        "fs-extra": "^8.1.0"
+    },
+    "bin": {
+        "@adrielus/lunar": "bin/lunar.js",
+        "lunar": "bin/lunar.js"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^8.0.1",
+        "ts-node": "^8.4.1",
+        "typescript": "^3.6.4"
+    }
+}
