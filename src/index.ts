@@ -1,10 +1,8 @@
 import { Command } from 'commander'
 import { LunarCommand } from './types/Command'
-import { LunarSourceReader } from './classes/Compiler'
-import chalk from 'chalk'
-import { resolve } from 'path'
-import { LunarTokenReader } from './classes/TokenReader'
-import { TokenPrintData } from './types/TokenPrintData'
+import { CommandLogger } from './classes/CommandLogger'
+import { createTokenStream } from './helpers/createTokenStream'
+import { interpret } from './helpers/interpret'
 
 const program = new Command() as LunarCommand
 
@@ -16,40 +14,13 @@ program
 program
     .option('-o, --output <path>', 'specify the path to the output')
     .option('-t, --tokens', 'output individual tokens', false)
+    .option('-s, --silent', 'display information', false)
 
-program.command('compile <entry>').action(async (entry: string) => {
-    try {
-        if (!program.output) {
-            throw new Error(chalk.red('Output arg not found'))
-        }
+program.logger = new CommandLogger(program)
 
-        console.log(chalk.green(`Compiling ${entry}...`))
-        console.log(chalk.green(`Reading files...`))
-
-        const reader = new LunarSourceReader(resolve(process.cwd(), entry))
-
-        await reader.start()
-
-        console.log(chalk.green('Parsing tokens...'))
-
-        const tokenizer = new LunarTokenReader(reader)
-        const tokens: Array<TokenPrintData> = []
-
-        while (tokenizer.peek()) {
-            const next = tokenizer.next()
-
-            tokens.push({
-                ...next,
-                name: next.name()
-            })
-        }
-
-        if (program.tokens) {
-            console.table(tokens)
-        }
-    } catch (err) {
-        console.log(chalk.red(`CompilationError: ${err.message}`))
-    }
+program.command('compile <entry>').action(async (entry: string) => {})
+program.command('execute <entry>').action(async (entry: string) => {
+    interpret(entry, program)
 })
 
 program.parse(process.argv)

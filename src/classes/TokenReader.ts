@@ -11,6 +11,10 @@ export class LunarTokenReader {
 
     public constructor(public input: LunarSourceReader) {}
 
+    public reset() {
+        this.current = null
+    }
+
     public isKeyword(keyword: string) {
         return keywordNames.includes((keyword as unknown) as keyword)
     }
@@ -143,6 +147,10 @@ export class LunarTokenReader {
 
     public eof() {
         return this.peek() === null
+    }
+
+    public croak(message: string) {
+        this.input.croak(message)
     }
 
     public peek() {

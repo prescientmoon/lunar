@@ -1,4 +1,5 @@
-import { readFile, ensureFile } from 'fs-extra'
+import { readFile } from 'fs-extra'
+import { CommandLogger } from './CommandLogger'
 
 export class LunarSourceReader {
     private source: string = ''
@@ -6,13 +7,23 @@ export class LunarSourceReader {
     private position = [0, 0]
     private index = 0
 
-    public constructor(public entry: string) {}
+    public constructor(public entry: string, public logger: CommandLogger) {}
+
+    public reset() {
+        this.position = [0, 0]
+        this.index = 0
+    }
 
     public async start() {
-        console.log(this.entry)
+        this.logger.log(this.entry)
 
         try {
-            this.source = (await readFile(this.entry)).toString()
+            this.source = `{
+                ${(await readFile(this.entry)).toString()}
+            }`
+                .split('\n')
+                .map(s => s.trim())
+                .join('\n')
         } catch {
             throw new Error(`Something went wrong while reading ${this.entry}`)
         }
@@ -39,7 +50,13 @@ export class LunarSourceReader {
         return this.peek() == ''
     }
 
-    public croak(msg: string) {
-        throw new Error(`${msg} (${this.position[0]}:${this.position[1]})`)
+    public croak(message: string) {
+        throw new Error(
+            [
+                `${message} (${this.position[0] - 1}:${this.position[1]})`,
+                `${this.source.split('\n')[this.position[0]]}`,
+                `${' '.repeat(this.position[1] - 1)}^`
+            ].join('\n')
+        )
     }
 }
