@@ -1,5 +1,6 @@
 import { readFile } from 'fs-extra'
 import { CommandLogger } from './CommandLogger'
+import chalk from 'chalk'
 
 export class LunarSourceReader {
     private source: string = ''
@@ -25,7 +26,7 @@ export class LunarSourceReader {
                 .map(s => s.trim())
                 .join('\n')
         } catch {
-            throw new Error(`Something went wrong while reading ${this.entry}`)
+            this.endWith(`Something went wrong while reading ${this.entry}`)
         }
     }
 
@@ -50,13 +51,31 @@ export class LunarSourceReader {
         return this.peek() == ''
     }
 
-    public croak(message: string) {
-        throw new Error(
-            [
-                `${message} (${this.position[0] - 1}:${this.position[1]})`,
-                `${this.source.split('\n')[this.position[0]]}`,
-                `${' '.repeat(this.position[1] - 1)}^`
-            ].join('\n')
+    public logError(error: Error) {
+        this.croak(
+            this.logger.command.traces ? error.toString() : error.message,
+            false
         )
+    }
+
+    public endWith(message: string) {
+        console.error(chalk.redBright(message))
+        process.exit(1)
+    }
+
+    public croak(message: string, throwError = false) {
+        const spaces = this.position[1] - 1
+
+        const errorMessage = [
+            `${message} (${this.position[0] - 1}:${this.position[1]})`,
+            `${this.source.split('\n')[this.position[0]]}`,
+            `${' '.repeat(spaces)}^`
+        ].join('\n')
+
+        if (throwError) {
+            throw new Error(errorMessage)
+        } else {
+            this.endWith(errorMessage)
+        }
     }
 }

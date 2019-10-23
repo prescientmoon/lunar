@@ -1,39 +1,55 @@
+import { ImportanceSequence } from '../classes/ImportanceSequence'
+
 export enum operators {
     add = '+',
     substract = '-',
     multiply = '*',
     divide = '/',
+    divideBy = ':',
     modulo = '%',
     assign = '=',
-    and = '&',
-    or = '|',
+    bitwiseAnd = '&',
+    bitwiseOr = '|',
+    bitwiseXor = '^',
+    and = '&&',
+    or = '||',
+    xor = '^^',
     smaller = '<',
     smallerOrEqual = '<=',
     greater = '>',
-    greaterOrEqual = '<=',
+    greaterOrEqual = '>=',
     equal = '==',
     notEqual = '!=',
-    not = '!'
+    not = '!',
+    walrus = ':=',
+    power = '**'
 }
 
-export const operatorValues = Object.values(operators).filter(
-    operator => operator.length === 1
-) as Array<operators & string>
+export const operatorValues = Object.values(operators)
+
+const sequence = new ImportanceSequence()
 
 export const operatorImportance: Record<operators, number> = {
-    [operators.assign]: 1,
-    [operators.or]: 2,
-    [operators.and]: 3,
-    [operators.smaller]: 7,
-    [operators.greater]: 7,
-    [operators.smallerOrEqual]: 7,
-    [operators.greaterOrEqual]: 7,
-    [operators.equal]: 7,
-    [operators.notEqual]: 7,
-    [operators.add]: 10,
-    [operators.substract]: 10,
-    [operators.multiply]: 20,
-    [operators.divide]: 20,
-    [operators.modulo]: 20,
-    [operators.not]: 21
+    [operators.assign]: sequence.last(),
+    [operators.walrus]: sequence.next(),
+    [operators.or]: sequence.next(),
+    [operators.xor]: sequence.next(),
+    [operators.and]: sequence.next(),
+    [operators.smaller]: sequence.next(),
+    [operators.greater]: sequence.last(),
+    [operators.smallerOrEqual]: sequence.last(),
+    [operators.greaterOrEqual]: sequence.last(),
+    [operators.equal]: sequence.last(),
+    [operators.notEqual]: sequence.last(),
+    [operators.bitwiseOr]: sequence.next(),
+    [operators.bitwiseXor]: sequence.next(),
+    [operators.bitwiseAnd]: sequence.next(),
+    [operators.add]: sequence.next(),
+    [operators.substract]: sequence.last(),
+    [operators.multiply]: sequence.next(),
+    [operators.divide]: sequence.last(),
+    [operators.divideBy]: sequence.last(),
+    [operators.modulo]: sequence.last(),
+    [operators.power]: sequence.next(),
+    [operators.not]: sequence.next()
 }

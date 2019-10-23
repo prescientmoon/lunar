@@ -5,5 +5,6 @@ export interface LunarCommand extends Command {
     output: string
     tokens: boolean
     silent: boolean
+    traces: boolean
     logger: CommandLogger
 }

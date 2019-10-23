@@ -9,39 +9,39 @@ export const createTokenStream = async (
     entry: string,
     program: LunarCommand
 ) => {
+    program.logger.log(chalk.green(`Reading files...`))
+
+    const reader = new LunarSourceReader(
+        resolve(process.cwd(), entry),
+        program.logger
+    )
+
+    await reader.start()
+
+    program.logger.log(chalk.green('Parsing tokens...'))
+
     try {
-        program.logger.log(chalk.green(`Reading files...`))
-
-        const reader = new LunarSourceReader(
-            resolve(process.cwd(), entry),
-            program.logger
-        )
-
-        await reader.start()
-
-        program.logger.log(chalk.green('Parsing tokens...'))
-
         const tokenizer = new LunarTokenReader(reader)
-        const tokens: Array<TokenPrintData> = []
-
-        while (tokenizer.peek()) {
-            const next = tokenizer.next()
-
-            tokens.push({
-                ...next,
-                name: next.name()
-            })
-        }
 
         if (program.tokens) {
+            const tokens: Array<TokenPrintData> = []
+
+            while (tokenizer.peek()) {
+                const next = tokenizer.next()
+
+                tokens.push({
+                    ...next,
+                    _typeName: next.typeName(),
+                    _name: next.name()
+                })
+            }
             program.logger.table(tokens)
+
+            reader.reset()
         }
-
-        reader.reset()
-        tokenizer.reset()
-
-        return new LunarTokenReader(reader)
-    } catch (err) {
-        console.error(chalk.red(`Error while parsing the file: ${err.message}`))
+    } catch (error) {
+        reader.logError(error)
     }
+
+    return new LunarTokenReader(reader)
 }

@@ -1,11 +1,42 @@
 import { tokens, TokenValueMap } from '../constants/Tokens'
 import { Ast, AstNodeType } from '../types/Ast'
+import { operators } from '../constants/operators'
+import { punctuation } from '../constants/punctuation'
 
 export class Token<T extends tokens = tokens> {
     public constructor(public type: T, public value: TokenValueMap[T]) {}
 
-    public name() {
+    public typeName() {
         return tokens[this.type]
+    }
+
+    public name() {
+        try {
+            switch (this.type) {
+                case tokens.keyword:
+                    return this.value
+                case tokens.number:
+                    return 'number'
+                case tokens.string:
+                    return 'string'
+                case tokens.variable:
+                    return 'variable'
+                case tokens.operator:
+                    return Object.entries(operators).find(
+                        ([, value]) => value === this.value
+                    )[0]
+                case tokens.punctuation:
+                    return Object.entries(punctuation).find(
+                        ([, value]) => value === this.value
+                    )[0]
+            }
+        } catch (error) {
+            console.error(
+                `Encountered an error while searching for the name of ${this.value}: ${error.message}`
+            )
+        }
+
+        throw new Error(`Cannot get name for token ${JSON.stringify(this)}`)
     }
 
     public toAstNode(): Ast {

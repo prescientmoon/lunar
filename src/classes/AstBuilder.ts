@@ -113,6 +113,7 @@ export class AstBuilder {
 
     public maybeCall(expression: () => Ast) {
         const currentExpression = expression()
+
         return this.isPunctuation(punctuation.openParanthesis)
             ? this.parseCall(currentExpression)
             : currentExpression
@@ -274,6 +275,6 @@ export class AstBuilder {
     }
 
     public parseExpression(): Ast {
-        return this.maybeCall(() => this.maybeBinary(this.parseAtom(), 0))
+        return this.maybeCall(() => this.maybeBinary(this.parseAtom(), -1))
     }
 }

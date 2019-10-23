@@ -4,5 +4,6 @@ import { Token } from '../classes/Token'
 export interface TokenPrintData<T extends Token = Token> {
     type: Token['type']
     value: Token['value']
-    name: ReturnType<T['name']>
+    _typeName: ReturnType<T['typeName']>
+    _name: ReturnType<T['name']>
 }

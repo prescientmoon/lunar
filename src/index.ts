@@ -15,6 +15,7 @@ program
     .option('-o, --output <path>', 'specify the path to the output')
     .option('-t, --tokens', 'output individual tokens', false)
     .option('-s, --silent', 'display information', false)
+    .option('-k, --traces', 'display stack traces for errors', false)
 
 program.logger = new CommandLogger(program)
 
