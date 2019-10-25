@@ -1,4 +1,4 @@
-import { LunarSourceReader } from './Compiler'
+import { LunarSourceReader } from './FileReader'
 import { keywordNames, keyword, keywords } from '../constants/keywords'
 import { numberRegex, idStart } from '../constants/regexes'
 import { tokens } from '../constants/Tokens'

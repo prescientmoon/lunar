@@ -1,15 +1,23 @@
 import { LunarCommand } from '../types/Command'
-import { createTokenStream } from './createTokenStream'
-import { AstBuilder } from '../classes/AstBuilder'
+import { createAst } from './createAst'
+import { evaluate } from './evaluate'
+import { Enviroment } from '../classes/Enviroment'
+import { resolve } from 'path'
+import { LunarSourceReader } from '../classes/FileReader'
 
 export const interpret = async (path: string, command: LunarCommand) => {
-    const tokenStream = await createTokenStream(path, command)
+    const reader = new LunarSourceReader(command.logger)
 
-    try {
-        const ast = new AstBuilder(tokenStream)
+    await reader.fromFile(resolve(process.cwd(), path))
 
-        command.logger.inspect(ast.parseProgram())
-    } catch (e) {
-        tokenStream.input.logError(e)
+    const ast = await createAst(reader, command)
+    const globalEnviroment = new Enviroment(null, reader)
+
+    globalEnviroment.define('print', console.log)
+
+    const result = evaluate(ast, globalEnviroment)
+
+    if (result !== undefined) {
+        command.logger.log(result)
     }
 }

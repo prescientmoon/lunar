@@ -1,8 +1,8 @@
 import { Command } from 'commander'
 import { LunarCommand } from './types/Command'
 import { CommandLogger } from './classes/CommandLogger'
-import { createTokenStream } from './helpers/createTokenStream'
 import { interpret } from './helpers/interpret'
+import { playground } from './helpers/playground'
 
 const program = new Command() as LunarCommand
 
@@ -12,16 +12,25 @@ program
     .name('lunar')
 
 program
-    .option('-o, --output <path>', 'specify the path to the output')
     .option('-t, --tokens', 'output individual tokens', false)
     .option('-s, --silent', 'display information', false)
-    .option('-k, --traces', 'display stack traces for errors', false)
+    .option('-a, --ast', 'display ast', false)
 
 program.logger = new CommandLogger(program)
 
-program.command('compile <entry>').action(async (entry: string) => {})
-program.command('execute <entry>').action(async (entry: string) => {
-    interpret(entry, program)
-})
+program
+    .command('compile <entry>')
+    .alias('c')
+    .option('-o, --output <path>', 'specify the path to the output')
+    .action(async (entry: string) => {})
+
+program
+    .command('execute <entry>')
+    .alias('exec')
+    .action(async (entry: string) => {
+        interpret(entry, program)
+    })
+
+program.command('playground').action(playground(program))
 
 program.parse(process.argv)

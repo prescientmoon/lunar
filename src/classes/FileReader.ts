@@ -5,29 +5,40 @@ import chalk from 'chalk'
 export class LunarSourceReader {
     private source: string = ''
 
+    private lastX = 0
     private position = [0, 0]
     private index = 0
 
-    public constructor(public entry: string, public logger: CommandLogger) {}
+    public constructor(
+        public logger: CommandLogger,
+        public exit = process.exit
+    ) {}
 
     public reset() {
         this.position = [0, 0]
         this.index = 0
+        this.lastX = 0
     }
 
-    public async start() {
-        this.logger.log(this.entry)
+    public async fromFile(entry: string) {
+        this.logger.log(entry)
 
         try {
-            this.source = `{
-                ${(await readFile(this.entry)).toString()}
-            }`
-                .split('\n')
-                .map(s => s.trim())
-                .join('\n')
+            this.fromString((await readFile(entry)).toString())
         } catch {
-            this.endWith(`Something went wrong while reading ${this.entry}`)
+            this.endWith(`Something went wrong while reading ${entry}`)
         }
+    }
+
+    public fromString(source: string) {
+        this.reset()
+
+        this.source = `{
+            ${source}
+        }`
+            .split('\n')
+            .map(s => s.trim())
+            .join('\n')
     }
 
     public peek() {
@@ -37,7 +48,9 @@ export class LunarSourceReader {
     public next() {
         const ch = this.source.charAt(this.index++)
 
-        if (ch == '\n') {
+        this.lastX = this.position[1]
+
+        if (ch === '\n') {
             this.position[0]++
             this.position[1] = 0
         } else {
@@ -51,16 +64,9 @@ export class LunarSourceReader {
         return this.peek() == ''
     }
 
-    public logError(error: Error) {
-        this.croak(
-            this.logger.command.traces ? error.toString() : error.message,
-            false
-        )
-    }
-
     public endWith(message: string) {
         console.error(chalk.redBright(message))
-        process.exit(1)
+        this.exit(1)
     }
 
     public croak(message: string, throwError = false) {
