@@ -1,4 +1,4 @@
-import { operators } from '../constants/operators'
+import { operators, unaryOperator } from '../constants/operators'
 
 const toNumber = (x: unknown) => {
     if (typeof x !== 'number') {
@@ -16,7 +16,17 @@ const div = (x: unknown) => {
     return toNumber(x)
 }
 
-export const applyOperator = (
+export const applyUnaryOperator = (operator: unaryOperator, body: unknown) => {
+    if (operator === operators.substract) {
+        return -toNumber(body)
+    } else if (operator === operators.not) {
+        return !body
+    }
+
+    throw new Error(`Can't apply operator ${operator}`)
+}
+
+export const applyBinaryOperator = (
     operator: operators,
     left: unknown,
     right: unknown

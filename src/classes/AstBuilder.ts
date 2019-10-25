@@ -3,7 +3,12 @@ import { Ast, AstNodeType } from '../types/Ast'
 import { tokens } from '../constants/Tokens'
 import { punctuation } from '../constants/punctuation'
 import { keyword, keywords } from '../constants/keywords'
-import { operators, operatorImportance } from '../constants/operators'
+import {
+    operators,
+    operatorImportance,
+    unary,
+    unaryOperator
+} from '../constants/operators'
 import { Token } from './Token'
 
 export class AstBuilder {
@@ -112,6 +117,15 @@ export class AstBuilder {
             token &&
             token.type === tokens.operator &&
             (!operator || token.value === operator)
+        )
+    }
+
+    public isUnary(operator?: operators): operator is unaryOperator {
+        const token = this.input.peek()
+
+        return (
+            this.isOperator(operator) &&
+            unary.includes(token.value as unaryOperator)
         )
     }
 
@@ -239,6 +253,14 @@ export class AstBuilder {
         }
     }
 
+    public parseUnary(): Ast<AstNodeType.unaryOperator> {
+        return {
+            type: AstNodeType.unaryOperator,
+            operator: this.input.next().value as unaryOperator,
+            body: this.parseExpression()
+        }
+    }
+
     public parseFunction(): Ast<AstNodeType.anonymousFunction> {
         return {
             type: AstNodeType.anonymousFunction,
@@ -295,6 +317,8 @@ export class AstBuilder {
             } else if (this.isKeyword(keywords.fn)) {
                 this.input.next()
                 return this.parseFunction()
+            } else if (this.isUnary()) {
+                return this.parseUnary()
             }
 
             const token = this.input.next()

@@ -13,8 +13,6 @@ export const playground = (command: LunarCommand) => async () => {
         output: process.stdout
     })
 
-    command.log = true
-
     const question = (question: string) =>
         new Promise<string>(resolve => {
             readline.question(question, resolve)

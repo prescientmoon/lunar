@@ -4,6 +4,7 @@ import { evaluate } from './evaluate'
 import { Enviroment } from '../classes/Enviroment'
 import { resolve } from 'path'
 import { LunarSourceReader } from '../classes/FileReader'
+import { logResult } from './logResult'
 
 export const interpret = async (path: string, command: LunarCommand) => {
     const reader = new LunarSourceReader(command.logger)
@@ -17,7 +18,5 @@ export const interpret = async (path: string, command: LunarCommand) => {
 
     const result = evaluate(ast, globalEnviroment)
 
-    if (result !== undefined) {
-        command.logger.log(result)
-    }
+    logResult(result)
 }

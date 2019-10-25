@@ -1,4 +1,4 @@
-import { operators } from '../constants/operators'
+import { operators, unaryOperator } from '../constants/operators'
 
 export enum AstNodeType {
     number,
@@ -9,6 +9,7 @@ export enum AstNodeType {
     assign,
     functionCall,
     anonymousFunction,
+    unaryOperator,
     binaryOperator,
     program
 }
@@ -35,6 +36,10 @@ export type AstNodeBody = {
         operator: operators.assign
         left: Ast
         right: Ast
+    }
+    [AstNodeType.unaryOperator]: {
+        operator: unaryOperator
+        body: Ast
     }
     [AstNodeType.binaryOperator]: {
         operator: operators

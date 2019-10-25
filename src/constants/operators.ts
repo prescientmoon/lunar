@@ -26,6 +26,9 @@ export enum operators {
 }
 
 export const operatorValues = Object.values(operators)
+export const unary = [operators.not, operators.substract] as const
+
+export type unaryOperator = operators.not | operators.substract
 
 const sequence = new ImportanceSequence()
 

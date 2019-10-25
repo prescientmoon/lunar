@@ -1,7 +1,7 @@
 import { Enviroment } from '../classes/Enviroment'
 import { Ast, AstNodeType } from '../types/Ast'
 import { createFunction } from './createFunction'
-import { applyOperator } from './applyOperator'
+import { applyBinaryOperator, applyUnaryOperator } from './applyOperator'
 
 const isNodeOfType = <T extends AstNodeType>(
     expression: Ast<any>,
@@ -33,8 +33,13 @@ export const evaluate = <T extends AstNodeType>(
             expression.left.value,
             evaluate(expression.right, enviroment)
         )
+    } else if (isNodeOfType(expression, AstNodeType.unaryOperator)) {
+        return applyUnaryOperator(
+            expression.operator,
+            evaluate(expression.body, enviroment)
+        )
     } else if (isNodeOfType(expression, AstNodeType.binaryOperator)) {
-        return applyOperator(
+        return applyBinaryOperator(
             expression.operator,
             evaluate(expression.left, enviroment),
             evaluate(expression.right, enviroment)
@@ -68,7 +73,5 @@ export const evaluate = <T extends AstNodeType>(
         return target.apply(null, _arguments)
     }
 
-    throw new Error(
-        `Cannot evaluate node: ${expression} with enviroment: ${enviroment}`
-    )
+    throw new Error(`Cannot evaluate node: ${JSON.stringify(expression)}`)
 }
