@@ -13,7 +13,7 @@ program
 
 program
     .option('-t, --tokens', 'output individual tokens', false)
-    .option('-s, --silent', 'display information', false)
+    .option('-l, --log', 'display information', false)
     .option('-a, --ast', 'display ast', false)
 
 program.logger = new CommandLogger(program)

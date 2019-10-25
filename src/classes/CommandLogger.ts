@@ -8,7 +8,7 @@ export class CommandLogger {
         args: T,
         callback: (...args: T) => void
     ) {
-        if (!this.command.silent) {
+        if (this.command.log) {
             callback(...args)
         }
     }
