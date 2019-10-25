@@ -14,28 +14,62 @@ export class AstBuilder {
 
     public constructor(public input: LunarTokenReader) {}
 
-    public delimited<T>(
+    /**
+     * Keeps track of optional stuff.
+     */
+    private optional: punctuation[] = []
+
+    /**
+     * Next occurance of a charcter becomes optional.
+     *
+     * @param character The punctuation to skip.
+     */
+    private makeOptional(character: punctuation) {
+        this.optional.push(character)
+    }
+
+    /**
+     * Parses a sequence of values.
+     *
+     * @param start The punctuation to start the sequence.
+     * @param stop The puncuation to stop everything.
+     * @param separator The thing which separates values.
+     * @param parser Function to parse individual values.
+     */
+    private delimited<T>(
         start: punctuation,
         stop: punctuation,
         separator: punctuation,
         parser: () => T
     ) {
         const results: T[] = []
-        let first = true
 
         // skip initial delimiter
         this.skipPunctuation(start)
+
+        // we don't want stuff like (, 1, 2, 3) to happen
+        let first = true
 
         while (!this.input.eof()) {
             if (this.isPunctuation(stop)) {
                 break
             }
 
+            const nextIsOptional = this.optional.includes(separator)
+
             if (first) {
                 first = false
-            } else {
-                // skip delimiter
+            } // allow skipping separators
+            else if (
+                (nextIsOptional && this.isPunctuation(separator)) ||
+                !nextIsOptional
+            ) {
                 this.skipPunctuation(separator)
+
+                // remove all separatros from array
+                this.optional = this.optional.filter(
+                    character => character !== separator
+                )
             }
 
             // the last separator can be missing
@@ -225,6 +259,9 @@ export class AstBuilder {
             punctuation.semicolon,
             this.parseExpression.bind(this)
         )
+
+        // optional ; after the }
+        this.makeOptional(punctuation.semicolon)
 
         if (program.length === 0) {
             return AstBuilder.falseNode
