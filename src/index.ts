@@ -22,7 +22,9 @@ program
     .command('compile <entry>')
     .alias('c')
     .option('-o, --output <path>', 'specify the path to the output')
-    .action(async (entry: string) => {})
+    .action(async (entry: string) => {
+        console.log(`This command is still in development`)
+    })
 
 program
     .command('execute <entry>')

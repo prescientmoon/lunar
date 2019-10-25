@@ -19,6 +19,12 @@ lunar --version
 
 # Usage
 
+Playground:
+
+```sh
+lunar playgruond
+```
+
 Run the demos:
 
 ```sh
