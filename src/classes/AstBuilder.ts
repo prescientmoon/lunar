@@ -283,29 +283,22 @@ export class AstBuilder {
     public parseDefinition() {
         const name = this.parseVariableName()
 
-        // Check if this is the last definition
-        if (
-            this.isPunctuation(punctuation.comma) ||
-            this.isPunctuation(punctuation.closeBracket)
-        ) {
-            return [name, AstBuilder.falseNode]
+        // Check if this has a value
+        if (this.isOperator(operatorIds.assign)) {
+            this.skipOperator(operatorIds.assign)
+
+            return [name, this.parseExpression()]
         }
 
-        this.skipOperator(operatorIds.assign)
-
-        return [name, this.parseExpression()]
+        return [name, AstBuilder.falseNode]
     }
 
     public parseDefinitions(): Ast<AstNodeType.define> {
-        const pairs = this.delimited(
-            punctuation.openBracket,
-            punctuation.closeBracket,
-            punctuation.comma,
-            this.parseDefinition.bind(this)
-        )
+        const pairs = [this.parseDefinition()]
 
-        // optional ; after the }
-        this.makeOptional(punctuation.semicolon)
+        while (this.isPunctuation(punctuation.comma)) {
+            pairs.push(this.parseDefinition())
+        }
 
         return {
             type: AstNodeType.define,

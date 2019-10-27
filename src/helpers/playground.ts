@@ -34,6 +34,7 @@ export const playground = (command: LunarCommand) => async () => {
         const ast = await createAst(reader, command)
 
         if (errors.length) {
+            errors = []
             continue
         }
 
