@@ -6,6 +6,7 @@ export const keywordNames = [
     'true',
     'false',
     'declare',
+    'const',
     'fn'
 ] as const
 

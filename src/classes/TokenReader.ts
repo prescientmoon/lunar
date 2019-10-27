@@ -64,15 +64,20 @@ export class LunarTokenReader {
     }
 
     private readOperator() {
-        const next = this.input.next(maxOperatorLength)
+        // Inspect the maximum length an operator can take
+        const next = this.input.peek(maxOperatorLength)
 
         let currentMatch: null | string = null
 
         for (const { value } of operatorValues) {
             if (next.startsWith(value)) {
+                // If the operator matches perfectly then return it
                 if (value.length === next.length) {
+                    this.input.next(value.length)
                     return this.getOperatorIdByChar(value)
-                } else if (
+                }
+                // Find operator with maximum length
+                else if (
                     value.length >
                     (currentMatch !== null ? currentMatch.length : 0)
                 ) {
@@ -81,9 +86,13 @@ export class LunarTokenReader {
             }
         }
 
-        return currentMatch !== null
-            ? this.getOperatorIdByChar(currentMatch)
-            : null
+        if (currentMatch !== null) {
+            // Actually move the cursor
+            this.input.next(currentMatch.length)
+            return this.getOperatorIdByChar(currentMatch)
+        }
+
+        return currentMatch
     }
 
     public readNumber() {

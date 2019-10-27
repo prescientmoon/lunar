@@ -1,11 +1,11 @@
 import { LunarSourceReader } from '../classes/FileReader'
 import { LunarCommand } from '../types/Command'
-import { Enviroment } from '../classes/Enviroment'
 import { createInterface } from 'readline'
 import { createAst } from './createAst'
 import { evaluate } from './evaluate'
 import chalk from 'chalk'
 import { logResult } from './logResult'
+import { createStandardEnviroment } from './createStandardEnviroment'
 
 export const playground = (command: LunarCommand) => async () => {
     const readline = createInterface({
@@ -20,8 +20,7 @@ export const playground = (command: LunarCommand) => async () => {
 
     const reader = new LunarSourceReader(command.logger)
 
-    const globalEnviroment = new Enviroment(null, reader)
-    globalEnviroment.define('print', console.log)
+    const globalEnviroment = createStandardEnviroment(reader)
 
     let errors: number[] = []
 

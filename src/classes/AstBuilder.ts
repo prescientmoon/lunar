@@ -1,5 +1,5 @@
 import { LunarTokenReader } from './TokenReader'
-import { Ast, AstNodeType } from '../types/Ast'
+import { Ast, AstNodeType, DeclarationData } from '../types/Ast'
 import { tokens } from '../constants/Tokens'
 import { punctuation } from '../constants/punctuation'
 import { keyword, keywords } from '../constants/keywords'
@@ -13,12 +13,12 @@ import { Token } from './Token'
 import { isTokenOfType } from '../helpers/isTokenOfType'
 
 export class AstBuilder {
-    public static falseNode: Ast<AstNodeType.boolean> = {
+    private static falseNode: Ast<AstNodeType.boolean> = {
         type: AstNodeType.boolean,
         value: false
     }
 
-    public constructor(public input: LunarTokenReader) {}
+    public constructor(private input: LunarTokenReader) {}
 
     /**
      * Parses a sequence of values.
@@ -69,7 +69,7 @@ export class AstBuilder {
         return results
     }
 
-    public isPunctuation(character: punctuation) {
+    private isPunctuation(character: punctuation) {
         const token = this.input.peek()
         return (
             token &&
@@ -78,7 +78,7 @@ export class AstBuilder {
         )
     }
 
-    public isKeyword(keyword: keyword) {
+    private isKeyword(keyword: keyword) {
         const token = this.input.peek()
 
         return (
@@ -88,7 +88,7 @@ export class AstBuilder {
         )
     }
 
-    public isOperator(operator?: operatorIds): operator is operatorIds {
+    private isOperator(operator?: operatorIds): operator is operatorIds {
         const token = this.input.peek()
 
         return Boolean(
@@ -98,7 +98,7 @@ export class AstBuilder {
         )
     }
 
-    public isUnary(operator?: operatorIds): operator is unaryOperator {
+    private isUnary(operator?: operatorIds): operator is unaryOperator {
         const token = this.input.peek()
 
         return (
@@ -107,7 +107,7 @@ export class AstBuilder {
         )
     }
 
-    public skipPunctuation(character: punctuation) {
+    private skipPunctuation(character: punctuation) {
         if (this.isPunctuation(character)) {
             this.input.next()
         } else {
@@ -115,7 +115,7 @@ export class AstBuilder {
         }
     }
 
-    public skipKeyword(keyword: keyword) {
+    private skipKeyword(keyword: keyword) {
         if (this.isKeyword(keyword)) {
             this.input.next()
         } else {
@@ -123,9 +123,7 @@ export class AstBuilder {
         }
     }
 
-    public unexpected() {
-        const token = this.input.peek()
-
+    private unexpected(token: Token) {
         this.input.croak(
             `Unexpected token of type ${token.typeName()}. Recived ${JSON.stringify(
                 token.value
@@ -133,7 +131,7 @@ export class AstBuilder {
         )
     }
 
-    public skipOperator(operator: operatorIds) {
+    private skipOperator(operator: operatorIds) {
         if (this.isOperator(operator)) {
             this.input.next()
         } else {
@@ -141,7 +139,7 @@ export class AstBuilder {
         }
     }
 
-    public maybeCall(expression: () => Ast) {
+    private maybeCall(expression: () => Ast) {
         const currentExpression = expression()
 
         return this.isPunctuation(punctuation.openParanthesis)
@@ -149,7 +147,7 @@ export class AstBuilder {
             : currentExpression
     }
 
-    public maybeBinary(left: Ast, importance: number): Ast {
+    private maybeBinary(left: Ast, importance: number): Ast {
         const token = this.isOperator()
             ? (this.input.peek() as Token<tokens.operator>)
             : null
@@ -182,7 +180,7 @@ export class AstBuilder {
         return left
     }
 
-    public parseCall(target: Ast): Ast<AstNodeType.functionCall> {
+    private parseCall(target: Ast): Ast<AstNodeType.functionCall> {
         return {
             type: AstNodeType.functionCall,
             target,
@@ -195,7 +193,7 @@ export class AstBuilder {
         }
     }
 
-    public parseVariableName() {
+    private parseVariableName() {
         const token = this.input.next()!
 
         if (!isTokenOfType(token, tokens.variable)) {
@@ -206,7 +204,7 @@ export class AstBuilder {
         return token.value
     }
 
-    public parseIf() {
+    private parseIf() {
         this.skipKeyword(keywords.if)
 
         const condition = this.parseExpression()
@@ -229,14 +227,14 @@ export class AstBuilder {
         return returnValue
     }
 
-    public parseBoolean(): Ast<AstNodeType.boolean> {
+    private parseBoolean(): Ast<AstNodeType.boolean> {
         return {
             type: AstNodeType.boolean,
             value: this.input.next()!.value === keywords.true
         }
     }
 
-    public parseUnary(): Ast<AstNodeType.unaryOperator> {
+    private parseUnary(): Ast<AstNodeType.unaryOperator> {
         return {
             type: AstNodeType.unaryOperator,
             operator: this.input.next()!.value as unaryOperator,
@@ -244,7 +242,7 @@ export class AstBuilder {
         }
     }
 
-    public parseFunction(): Ast<AstNodeType.anonymousFunction> {
+    private parseFunction(): Ast<AstNodeType.anonymousFunction> {
         return {
             type: AstNodeType.anonymousFunction,
             arguments: this.delimited(
@@ -257,20 +255,32 @@ export class AstBuilder {
         }
     }
 
-    public parseDefinition() {
+    private parseDefinition() {
         const name = this.parseVariableName()
 
         // Check if this has a value
         if (this.isOperator(operatorIds.assign)) {
             this.skipOperator(operatorIds.assign)
 
-            return [name, this.parseExpression()]
+            return { name, initialValue: this.parseExpression() }
         }
 
-        return [name, AstBuilder.falseNode]
+        return {
+            name,
+            initialValue: AstBuilder.falseNode
+        }
     }
 
-    public parseDefinitions(): Ast<AstNodeType.define> {
+    private isConstant() {
+        return this.isKeyword(keywords.const)
+    }
+
+    private parseDefinitions(): Ast<AstNodeType.define> {
+        const constant = this.isConstant()
+
+        // skip declare or const depenging on the variable type
+        this.skipKeyword(constant ? keywords.const : keywords.declare)
+
         const pairs = [this.parseDefinition()]
 
         while (this.isPunctuation(punctuation.comma)) {
@@ -281,7 +291,10 @@ export class AstBuilder {
 
         return {
             type: AstNodeType.define,
-            pairs: Object.fromEntries(pairs)
+            variables: pairs.map<DeclarationData>(pair => ({
+                ...pair,
+                constant
+            }))
         }
     }
 
@@ -306,7 +319,7 @@ export class AstBuilder {
         }
     }
 
-    public parseAtom() {
+    private parseAtom() {
         return this.maybeCall(() => {
             if (this.isPunctuation(punctuation.openParanthesis)) {
                 this.input.next()
@@ -318,8 +331,10 @@ export class AstBuilder {
                 return this.parseProgram()
             } else if (this.isKeyword(keywords.if)) {
                 return this.parseIf()
-            } else if (this.isKeyword(keywords.declare)) {
-                this.input.next()
+            } else if (
+                this.isKeyword(keywords.declare) ||
+                this.isKeyword(keywords.const)
+            ) {
                 return this.parseDefinitions()
             } else if (
                 this.isKeyword(keywords.true) ||
@@ -343,13 +358,13 @@ export class AstBuilder {
                 return token.toAstNode()
             }
 
-            this.unexpected()
+            this.unexpected(token)
 
             throw ''
         })
     }
 
-    public parseExpression(): Ast {
+    private parseExpression(): Ast {
         return this.maybeCall(() => this.maybeBinary(this.parseAtom(), -1))
     }
 }

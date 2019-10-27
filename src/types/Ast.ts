@@ -15,6 +15,12 @@ export enum AstNodeType {
     assign
 }
 
+export interface DeclarationData {
+    name: string
+    initialValue: Ast
+    constant: boolean
+}
+
 export type AstNodeBody = {
     [AstNodeType.number]: {
         value: number
@@ -29,7 +35,7 @@ export type AstNodeBody = {
         value: string
     }
     [AstNodeType.define]: {
-        pairs: Record<string, Ast>
+        variables: DeclarationData[]
     }
     [AstNodeType.conditional]: {
         condition: Ast

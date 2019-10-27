@@ -1,7 +1,12 @@
 import { LunarSourceReader } from './FileReader'
 
+export interface Variable {
+    value: unknown
+    constant: boolean
+}
+
 export class Enviroment {
-    public variables: Record<string, unknown>
+    public variables: Record<string, Variable>
 
     public constructor(
         public parent: Enviroment | null,
@@ -34,7 +39,7 @@ export class Enviroment {
 
     public get(name: string) {
         if (name in this.variables) {
-            return this.variables[name]
+            return this.variables[name].value
         }
 
         this.input.endWith(`Undefined variable ${name}`)
@@ -48,16 +53,24 @@ export class Enviroment {
             this.input.endWith(`Cannot defined global variable ${name}`)
         }
 
-        if (scope) {
-            scope.variables[name] = value
-        } else {
-            this.variables[name] = value
+        const variable = scope ? scope.variables[name] : this.variables[name]
+
+        if (!variable.constant) {
+            return value
         }
 
-        return value
+        this.input.endWith(`Cannot assign to constant variable ${name}`)
     }
 
-    public define(name: string, value: unknown) {
-        return (this.variables[name] = value)
+    public define(name: string, variable: Variable) {
+        this.variables[name] = variable
+
+        return variable.value
+    }
+
+    public defineConst(name: string, value: unknown) {
+        this.define(name, { value, constant: true })
+
+        return value
     }
 }

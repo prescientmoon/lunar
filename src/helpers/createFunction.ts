@@ -25,7 +25,7 @@ export const createFunction = (
             )
         }
 
-        scope.define(names[i], params[i])
+        scope.defineConst(names[i], params[i])
     }
 
     return evaluate(expression.body, scope)

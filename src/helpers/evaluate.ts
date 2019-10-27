@@ -3,6 +3,7 @@ import { Ast, AstNodeType } from '../types/Ast'
 import { createFunction } from './createFunction'
 import { applyBinaryOperator, applyUnaryOperator } from './applyOperator'
 import { isNodeOfType } from './isNodeOfType'
+import { addStackToError } from './logResult'
 
 export const evaluate = <T extends AstNodeType>(
     expression: Ast<T>,
@@ -53,7 +54,11 @@ export const evaluate = <T extends AstNodeType>(
             evaluate(argument, enviroment)
         )
 
-        return target.apply(null, _arguments)
+        try {
+            return target.apply(null, _arguments)
+        } catch (error) {
+            throw new Error(addStackToError(error.message as string, target))
+        }
     } else if (isNodeOfType(expression, AstNodeType.assign)) {
         if (!isNodeOfType(expression.left, AstNodeType.variable)) {
             throw new Error(
@@ -68,8 +73,11 @@ export const evaluate = <T extends AstNodeType>(
     } else if (isNodeOfType(expression, AstNodeType.define)) {
         let currentReturn: unknown = false
 
-        for (const [left, right] of Object.entries(expression.pairs)) {
-            currentReturn = enviroment.define(left, evaluate(right, enviroment))
+        for (const { name, constant, initialValue } of expression.variables) {
+            currentReturn = enviroment.define(name, {
+                constant,
+                value: evaluate(initialValue, enviroment)
+            })
         }
 
         return currentReturn
