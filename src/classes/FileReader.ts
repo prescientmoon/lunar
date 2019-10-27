@@ -2,22 +2,45 @@ import { readFile } from 'fs-extra'
 import { CommandLogger } from './CommandLogger'
 import chalk from 'chalk'
 
+interface ReaderPositionData {
+    index: number
+    position: [number, number]
+}
+
 export class LunarSourceReader {
     private source: string = ''
 
-    private lastX = 0
     private position = [0, 0]
     private index = 0
 
+    private stack: ReaderPositionData[] = []
+
     public constructor(
         public logger: CommandLogger,
-        public exit = process.exit
+        public exit: (code: number) => unknown = process.exit
     ) {}
+
+    public push() {
+        this.stack.push({
+            index: this.index,
+
+            // don't copy by reference
+            position: [...this.position] as [number, number]
+        })
+    }
+
+    public pop() {
+        const popped = this.stack.pop()
+
+        if (popped !== undefined) {
+            this.position = popped.position
+            this.index = popped.index
+        }
+    }
 
     public reset() {
         this.position = [0, 0]
         this.index = 0
-        this.lastX = 0
     }
 
     public async fromFile(entry: string) {
@@ -41,23 +64,23 @@ export class LunarSourceReader {
             .join('\n')
     }
 
-    public peek() {
-        return this.source.charAt(this.index)
+    public peek(length = 1) {
+        return this.source.substr(this.index, length)
     }
 
-    public next() {
-        const ch = this.source.charAt(this.index++)
+    public next(length = 1) {
+        const characters = this.source.substr(this.index++, length)
 
-        this.lastX = this.position[1]
-
-        if (ch === '\n') {
-            this.position[0]++
-            this.position[1] = 0
-        } else {
-            this.position[1]++
+        for (const character of characters) {
+            if (character === '\n') {
+                this.position[0]++
+                this.position[1] = 0
+            } else {
+                this.position[1]++
+            }
         }
 
-        return ch
+        return characters
     }
 
     public eof() {

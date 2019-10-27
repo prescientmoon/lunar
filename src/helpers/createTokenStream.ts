@@ -16,7 +16,7 @@ export const createTokenStream = async (
         const tokens: Array<TokenPrintData> = []
 
         while (tokenizer.peek()) {
-            const next = tokenizer.next()
+            const next = tokenizer.next()!
 
             tokens.push({
                 ...next,

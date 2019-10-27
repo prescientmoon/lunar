@@ -24,6 +24,10 @@ export class Enviroment {
                 return scope
             }
 
+            if (!scope.parent) {
+                throw new Error(`Cannot lookup scope for variable ${name}`)
+            }
+
             scope = scope.parent
         }
     }
@@ -38,9 +42,10 @@ export class Enviroment {
 
     public set(name: string, value: unknown) {
         const scope = this.lookup(name)
+
         // let's not allow defining globals from a nested environment
         if (!scope && this.parent) {
-            this.input.endWith(`Undefined variable ${name}`)
+            this.input.endWith(`Cannot defined global variable ${name}`)
         }
 
         if (scope) {

@@ -16,7 +16,10 @@ export const interpret = async (path: string, command: LunarCommand) => {
 
     globalEnviroment.define('print', console.log)
 
-    const result = evaluate(ast, globalEnviroment)
-
-    logResult(result)
+    try {
+        const result = evaluate(ast, globalEnviroment)
+        logResult(result)
+    } catch (error) {
+        reader.endWith(error.message)
+    }
 }

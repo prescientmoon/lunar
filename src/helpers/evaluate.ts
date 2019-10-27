@@ -2,13 +2,7 @@ import { Enviroment } from '../classes/Enviroment'
 import { Ast, AstNodeType } from '../types/Ast'
 import { createFunction } from './createFunction'
 import { applyBinaryOperator, applyUnaryOperator } from './applyOperator'
-
-const isNodeOfType = <T extends AstNodeType>(
-    expression: Ast<any>,
-    type: T
-): expression is Ast<T> => {
-    return expression.type === type
-}
+import { isNodeOfType } from './isNodeOfType'
 
 export const evaluate = <T extends AstNodeType>(
     expression: Ast<T>,
@@ -22,17 +16,6 @@ export const evaluate = <T extends AstNodeType>(
         return expression.value
     } else if (isNodeOfType(expression, AstNodeType.variable)) {
         return enviroment.get(expression.value)
-    } else if (isNodeOfType(expression, AstNodeType.assign)) {
-        if (!isNodeOfType(expression.left, AstNodeType.variable)) {
-            throw new Error(
-                `Cannot assign to: ${JSON.stringify(expression.left)}`
-            )
-        }
-
-        return enviroment.set(
-            expression.left.value,
-            evaluate(expression.right, enviroment)
-        )
     } else if (isNodeOfType(expression, AstNodeType.unaryOperator)) {
         return applyUnaryOperator(
             expression.operator,
@@ -71,6 +54,25 @@ export const evaluate = <T extends AstNodeType>(
         )
 
         return target.apply(null, _arguments)
+    } else if (isNodeOfType(expression, AstNodeType.assign)) {
+        if (!isNodeOfType(expression.left, AstNodeType.variable)) {
+            throw new Error(
+                `Cannot assign to: ${JSON.stringify(expression.left)}`
+            )
+        }
+
+        return enviroment.set(
+            expression.left.value,
+            evaluate(expression.right, enviroment)
+        )
+    } else if (isNodeOfType(expression, AstNodeType.define)) {
+        let currentReturn: unknown = false
+
+        for (const [left, right] of Object.entries(expression.pairs)) {
+            currentReturn = enviroment.define(left, evaluate(right, enviroment))
+        }
+
+        return currentReturn
     }
 
     throw new Error(`Cannot evaluate node: ${JSON.stringify(expression)}`)

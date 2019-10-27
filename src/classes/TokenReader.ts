@@ -1,10 +1,15 @@
 import { LunarSourceReader } from './FileReader'
-import { keywordNames, keyword, keywords } from '../constants/keywords'
+import { keywordNames, keyword } from '../constants/keywords'
 import { numberRegex, idStart } from '../constants/regexes'
 import { tokens } from '../constants/Tokens'
 import { Token } from './Token'
 import { specialCharacters } from '../constants/specialCharacters'
-import { operatorValues, operators } from '../constants/operators'
+import {
+    operatorValues,
+    operatorIds,
+    maxOperatorLength,
+    operators
+} from '../constants/operators'
 
 export class LunarTokenReader {
     private current: Token | null = null
@@ -30,12 +35,55 @@ export class LunarTokenReader {
         )
     }
 
-    public isOperator(next: string) {
-        return operatorValues.includes((next as unknown) as operators)
+    private getOperatorIdByChar(char: string) {
+        const result = Object.entries(operators).find(
+            ([, operator]) => operator.value === char
+        )
+
+        if (result === undefined) {
+            this.input.endWith(`Cannot find operator ${char}`)
+
+            // to make ts happy
+            // cause it can't know endWith throws
+            throw ''
+        }
+
+        return Number(result[0]) as operatorIds
+    }
+
+    public isOperator() {
+        this.input.push()
+        const result = this.readOperator() !== null
+        this.input.pop()
+
+        return result
     }
 
     private isWhitespace(next: string) {
         return ' \t\n'.includes(next)
+    }
+
+    private readOperator() {
+        const next = this.input.next()
+
+        let currentMatch: null | string = null
+
+        for (const { value } of operatorValues) {
+            if (next.startsWith(value)) {
+                if (value.length === next.length) {
+                    return this.getOperatorIdByChar(value)
+                } else if (
+                    value.length >
+                    (currentMatch !== null ? currentMatch.length : 0)
+                ) {
+                    currentMatch = value
+                }
+            }
+        }
+
+        return currentMatch !== null
+            ? this.getOperatorIdByChar(currentMatch)
+            : null
     }
 
     public readNumber() {
@@ -109,10 +157,12 @@ export class LunarTokenReader {
         return result
     }
 
-    public readNext(): Token<tokens> {
+    public readNext(): Token<tokens> | null {
         this.readWhile(this.isWhitespace)
 
-        if (this.input.eof()) return null
+        if (this.input.eof()) {
+            return null
+        }
 
         const next = this.input.peek()
 
@@ -129,13 +179,14 @@ export class LunarTokenReader {
             return this.readIdentifier()
         } else if (',;(){}[]'.includes(next)) {
             return new Token(tokens.punctuation, this.input.next())
-        } else if (this.isOperator(next)) {
-            return new Token(tokens.operator, this.readWhile(
-                this.isOperator
-            ) as operators)
+        } else if (this.isOperator()) {
+            return new Token(tokens.operator, this.readOperator()!)
         }
 
         this.input.croak(`Can't handle character: ${next}`)
+
+        // ts doesn't konw the croak method throws
+        throw ''
     }
 
     public next() {
@@ -158,6 +209,6 @@ export class LunarTokenReader {
             this.current = this.readNext()
         }
 
-        return this.current
+        return this.current!
     }
 }

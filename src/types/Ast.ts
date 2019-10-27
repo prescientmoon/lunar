@@ -1,4 +1,4 @@
-import { operators, unaryOperator } from '../constants/operators'
+import { operatorIds, unaryOperator } from '../constants/operators'
 
 export enum AstNodeType {
     number,
@@ -6,12 +6,13 @@ export enum AstNodeType {
     boolean,
     variable,
     conditional,
-    assign,
     functionCall,
     anonymousFunction,
     unaryOperator,
     binaryOperator,
-    program
+    program,
+    define,
+    assign
 }
 
 export type AstNodeBody = {
@@ -27,22 +28,25 @@ export type AstNodeBody = {
     [AstNodeType.variable]: {
         value: string
     }
+    [AstNodeType.define]: {
+        pairs: Record<string, Ast>
+    }
     [AstNodeType.conditional]: {
         condition: Ast
         then: Ast
         else?: Ast
-    }
-    [AstNodeType.assign]: {
-        operator: operators.assign
-        left: Ast
-        right: Ast
     }
     [AstNodeType.unaryOperator]: {
         operator: unaryOperator
         body: Ast
     }
     [AstNodeType.binaryOperator]: {
-        operator: operators
+        operator: operatorIds
+        left: Ast
+        right: Ast
+    }
+    [AstNodeType.assign]: {
+        operator: operatorIds
         left: Ast
         right: Ast
     }

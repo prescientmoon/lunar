@@ -3,6 +3,7 @@
 try {
     require('ts-node').register()
     require('../src/index.ts')
-} catch {
+} catch (err) {
+    console.error(err)
     require('../dist/index.js')
 }

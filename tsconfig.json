@@ -3,6 +3,8 @@
         "module": "commonjs",
         "esModuleInterop": true,
         "lib": ["esnext"],
-        "target": "esnext"
+        "target": "esnext",
+        "strictNullChecks": true,
+        "strictBindCallApply": true
     }
 }

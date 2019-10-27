@@ -1,4 +1,7 @@
-import { operators, unaryOperator } from '../constants/operators'
+import { operatorIds, unaryOperator } from '../constants/operators'
+import { Enviroment } from '../classes/Enviroment'
+import { Ast, AstNodeBody, AstNodeType } from '../types/Ast'
+import { isNodeOfType } from './isNodeOfType'
 
 const toNumber = (x: unknown) => {
     if (typeof x !== 'number') {
@@ -17,9 +20,11 @@ const div = (x: unknown) => {
 }
 
 export const applyUnaryOperator = (operator: unaryOperator, body: unknown) => {
-    if (operator === operators.substract) {
+    // TODO: refactor
+
+    if (operator === operatorIds.substract) {
         return -toNumber(body)
-    } else if (operator === operators.not) {
+    } else if (operator === operatorIds.not) {
         return !body
     }
 
@@ -27,47 +32,48 @@ export const applyUnaryOperator = (operator: unaryOperator, body: unknown) => {
 }
 
 export const applyBinaryOperator = (
-    operator: operators,
+    operator: operatorIds,
     left: unknown,
     right: unknown
 ) => {
-    switch (operator) {
-        case operators.add:
-            return toNumber(left) + toNumber(right)
-        case operators.substract:
-            return toNumber(left) - toNumber(right)
-        case operators.multiply:
-            return toNumber(left) * toNumber(right)
-        case operators.divide:
-            return toNumber(left) / div(right)
-        case operators.modulo:
-            return toNumber(left) % div(right)
-        case operators.power:
-            return toNumber(left) ** toNumber(right)
-        case operators.bitwiseAnd:
-            return toNumber(left) & toNumber(right)
-        case operators.bitwiseOr:
-            return toNumber(left) | toNumber(right)
-        case operators.bitwiseXor:
-            return toNumber(left) ^ toNumber(right)
-        case operators.and:
-            return left && right
-        case operators.or:
-            return left || right
-        case operators.xor:
-            return (left || right) && !(left && right)
-        case operators.smaller:
-            return toNumber(left) < toNumber(right)
-        case operators.greater:
-            return toNumber(left) > toNumber(right)
-        case operators.smallerOrEqual:
-            return toNumber(left) <= toNumber(right)
-        case operators.greaterOrEqual:
-            return toNumber(left) >= toNumber(right)
-        case operators.equal:
-            return left === right
-        case operators.notEqual:
-            return left !== right
+    // TODO: refactor
+
+    if (operator === operatorIds.add) {
+        return toNumber(left) + toNumber(right)
+    } else if (operator === operatorIds.substract) {
+        return toNumber(left) - toNumber(right)
+    } else if (operator === operatorIds.multiply) {
+        return toNumber(left) * toNumber(right)
+    } else if (operator === operatorIds.divide) {
+        return toNumber(left) / div(right)
+    } else if (operator === operatorIds.modulo) {
+        return toNumber(left) % div(right)
+    } else if (operator === operatorIds.power) {
+        return toNumber(left) ** toNumber(right)
+    } else if (operator === operatorIds.bitwiseAnd) {
+        return toNumber(left) & toNumber(right)
+    } else if (operator === operatorIds.bitwiseOr) {
+        return toNumber(left) | toNumber(right)
+    } else if (operator === operatorIds.bitwiseXor) {
+        return toNumber(left) ^ toNumber(right)
+    } else if (operator === operatorIds.and) {
+        return left && right
+    } else if (operator === operatorIds.or) {
+        return left || right
+    } else if (operator === operatorIds.xor) {
+        return (left || right) && !(left && right)
+    } else if (operator === operatorIds.smaller) {
+        return toNumber(left) < toNumber(right)
+    } else if (operator === operatorIds.greater) {
+        return toNumber(left) > toNumber(right)
+    } else if (operator === operatorIds.smallerOrEqual) {
+        return toNumber(left) <= toNumber(right)
+    } else if (operator === operatorIds.greaterOrEqual) {
+        return toNumber(left) >= toNumber(right)
+    } else if (operator === operatorIds.equal) {
+        return left === right
+    } else if (operator === operatorIds.notEqual) {
+        return left !== right
     }
 
     throw new Error(`Can't apply operator ${operator}`)

@@ -1,6 +1,6 @@
 import { tokens, TokenValueMap } from '../constants/Tokens'
 import { Ast, AstNodeType } from '../types/Ast'
-import { operators } from '../constants/operators'
+import { operatorIds } from '../constants/operators'
 import { punctuation } from '../constants/punctuation'
 
 export class Token<T extends tokens = tokens> {
@@ -10,6 +10,10 @@ export class Token<T extends tokens = tokens> {
         return tokens[this.type]
     }
 
+    /**
+     * Returns the name of the token. Only used for logging.
+     * Do not use for actual checking of the type.
+     */
     public name() {
         try {
             switch (this.type) {
@@ -21,14 +25,15 @@ export class Token<T extends tokens = tokens> {
                     return 'string'
                 case tokens.variable:
                     return 'variable'
+                // We can use '!' beause the errors are caught at runtime by the catch block.
                 case tokens.operator:
-                    return Object.entries(operators).find(
+                    return Object.entries(operatorIds).find(
                         ([, value]) => value === this.value
-                    )[0]
+                    )![0]
                 case tokens.punctuation:
                     return Object.entries(punctuation).find(
                         ([, value]) => value === this.value
-                    )[0]
+                    )![0]
             }
         } catch (error) {
             console.error(

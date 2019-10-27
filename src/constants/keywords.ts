@@ -1,13 +1,20 @@
-export type keyword = 'if' | 'else' | 'true' | 'false' | 'const' | 'then' | 'fn'
+// Array with all keywords
+export const keywordNames = [
+    'if',
+    'then',
+    'else',
+    'true',
+    'false',
+    'declare',
+    'fn'
+] as const
 
-export const keywords = {
-    if: 'if',
-    then: 'then',
-    else: 'else',
-    true: 'true',
-    false: 'false',
-    const: 'const',
-    fn: 'fn'
-} as const
+// Extract types from array
+export type keyword = (typeof keywordNames)[number]
 
-export const keywordNames = Object.values(keywords)
+// did this to allow me to chane keywords while still getting typechecking
+export const keywords = (Object.fromEntries(
+    keywordNames.map(name => [name, name])
+) as unknown) as {
+    [key in keyword]: key
+}
