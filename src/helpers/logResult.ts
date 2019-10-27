@@ -10,7 +10,7 @@ export const functionToString = (target: Function) =>
 
 export const logResult = (result: unknown) => {
     if (result instanceof Function) {
-        logValue(functionToString)
+        logValue(functionToString(result))
     } else if (result !== undefined) {
         logValue(result)
     }

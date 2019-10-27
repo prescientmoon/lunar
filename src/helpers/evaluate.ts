@@ -41,10 +41,12 @@ export const evaluate = <T extends AstNodeType>(
 
         return false
     } else if (isNodeOfType(expression, AstNodeType.program)) {
+        const scope = enviroment.extend()
+
         let result = 0
 
         for (const line of expression.program) {
-            result = evaluate(line, enviroment)
+            result = evaluate(line, scope)
         }
 
         return result

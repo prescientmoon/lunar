@@ -13,7 +13,7 @@ export class Enviroment {
         public input: LunarSourceReader
     ) {
         this.variables = Object.create(
-            this.parent ? this.parent.variables : null
+            this.parent ? this.parent.variables : Object
         )
     }
 
@@ -25,7 +25,7 @@ export class Enviroment {
         let scope: Enviroment = this
 
         while (scope) {
-            if (Object.prototype.hasOwnProperty.call(scope.variables, name)) {
+            if (scope.variables.hasOwnProperty(name)) {
                 return scope
             }
 
@@ -59,10 +59,14 @@ export class Enviroment {
             return value
         }
 
-        this.input.endWith(`Cannot assign to constant variable ${name}`)
+        return this.input.endWith(`Cannot assign to constant variable ${name}`)
     }
 
     public define(name: string, variable: Variable) {
+        if (this.variables.hasOwnProperty(name)) {
+            return this.input.endWith(`Variable ${name} was already declared!`)
+        }
+
         this.variables[name] = variable
 
         return variable.value
