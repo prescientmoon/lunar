@@ -69,7 +69,9 @@ export class LunarSourceReader {
     }
 
     public next(length = 1) {
-        const characters = this.source.substr(this.index++, length)
+        const characters = this.source.substr(this.index, length)
+
+        this.index += length
 
         for (const character of characters) {
             if (character === '\n') {

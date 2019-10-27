@@ -21,20 +21,6 @@ export class AstBuilder {
     public constructor(public input: LunarTokenReader) {}
 
     /**
-     * Keeps track of optional stuff.
-     */
-    private optional: punctuation[] = []
-
-    /**
-     * Next occurance of a charcter becomes optional.
-     *
-     * @param character The punctuation to skip.
-     */
-    private makeOptional(character: punctuation) {
-        this.optional.push(character)
-    }
-
-    /**
      * Parses a sequence of values.
      *
      * @param start The punctuation to start the sequence.
@@ -46,7 +32,8 @@ export class AstBuilder {
         start: punctuation,
         stop: punctuation,
         separator: punctuation,
-        parser: () => T
+        parser: () => T,
+        optional = false
     ) {
         const results: T[] = []
 
@@ -61,21 +48,11 @@ export class AstBuilder {
                 break
             }
 
-            const nextIsOptional = this.optional.includes(separator)
-
             if (first) {
                 first = false
             } // allow skipping separators
-            else if (
-                (nextIsOptional && this.isPunctuation(separator)) ||
-                !nextIsOptional
-            ) {
+            else if ((optional && this.isPunctuation(separator)) || !optional) {
                 this.skipPunctuation(separator)
-
-                // remove all separatros from array
-                this.optional = this.optional.filter(
-                    character => character !== separator
-                )
             }
 
             // the last separator can be missing
@@ -234,9 +211,8 @@ export class AstBuilder {
 
         const condition = this.parseExpression()
 
-        if (!this.isPunctuation(punctuation.openBracket)) {
-            this.skipKeyword(keywords.then)
-        }
+        this.skipKeyword(keywords.then)
+
         const then = this.parseExpression()
 
         const returnValue: Ast<AstNodeType.conditional> = {
@@ -249,6 +225,7 @@ export class AstBuilder {
             this.input.next()
             returnValue.else = this.parseExpression()
         }
+
         return returnValue
     }
 
@@ -297,6 +274,8 @@ export class AstBuilder {
         const pairs = [this.parseDefinition()]
 
         while (this.isPunctuation(punctuation.comma)) {
+            this.skipPunctuation(punctuation.comma)
+
             pairs.push(this.parseDefinition())
         }
 
@@ -311,11 +290,9 @@ export class AstBuilder {
             punctuation.openBracket,
             punctuation.closeBracket,
             punctuation.semicolon,
-            this.parseExpression.bind(this)
+            this.parseExpression.bind(this),
+            true
         )
-
-        // optional ; after the }
-        this.makeOptional(punctuation.semicolon)
 
         if (program.length === 0) {
             return AstBuilder.falseNode

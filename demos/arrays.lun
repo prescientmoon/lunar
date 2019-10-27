@@ -1,0 +1,45 @@
+declare 
+    null = fn () {},
+    tail = fn (get) fn () null,
+    array = fn (length) {
+        declare 
+            item,
+            next = if length == 1 
+                then tail 
+                else array(length - 1),
+            set = fn (index, value) 
+                if index == 0 
+                    then item = value 
+                    else next(false)(index - 1, value),
+            get = fn (index)
+                if index == 0
+                    then item
+                    else next(true)(index - 1) 
+
+        # Return:
+        fn (_get) if _get then get else set
+    },
+    getter = fn (array) fn (index) array(true)(index),
+    setter = fn (array) fn (index, value) array(false)(index, value),
+    iterator = fn (array) {
+        declare get = getter(array), iterate = fn (index, callback) {
+            declare item = get(index)
+
+            if (item != null) then {
+                callback(item)
+                iterate(index + 1, callback)
+            }
+        } 
+
+        fn (callback) iterate(0, callback)
+    }
+
+declare test = array(4), set = setter(test), iterate = iterator(test)
+
+set(0, 4)
+set(2, 9)
+
+
+print('array:')
+iterate(print)
+print('the end')

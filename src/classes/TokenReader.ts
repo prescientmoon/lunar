@@ -64,7 +64,7 @@ export class LunarTokenReader {
     }
 
     private readOperator() {
-        const next = this.input.next()
+        const next = this.input.next(maxOperatorLength)
 
         let currentMatch: null | string = null
 
