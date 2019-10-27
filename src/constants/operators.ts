@@ -26,7 +26,8 @@ export enum operatorIds {
     equal,
     notEqual,
     not,
-    power
+    power,
+    pipe
 }
 
 export const operators: Record<operatorIds, Operator> = {
@@ -110,6 +111,10 @@ export const operators: Record<operatorIds, Operator> = {
     [operatorIds.xor]: {
         value: '^^',
         binary: true
+    },
+    [operatorIds.pipe]: {
+        value: '|>',
+        binary: true
     }
 }
 
@@ -135,6 +140,7 @@ export const operatorImportance: Record<operatorIds, number> = {
     [operatorIds.greaterOrEqual]: sequence.last(),
     [operatorIds.equal]: sequence.last(),
     [operatorIds.notEqual]: sequence.last(),
+    [operatorIds.pipe]: sequence.next(),
     [operatorIds.bitwiseOr]: sequence.next(),
     [operatorIds.bitwiseXor]: sequence.next(),
     [operatorIds.bitwiseAnd]: sequence.next(),

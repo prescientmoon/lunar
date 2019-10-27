@@ -74,6 +74,12 @@ export const applyBinaryOperator = (
         return left === right
     } else if (operator === operatorIds.notEqual) {
         return left !== right
+    } else if (operator === operatorIds.pipe) {
+        if (!(right instanceof Function)) {
+            throw new Error(`Cannot call ${right}`)
+        }
+
+        return right(left)
     }
 
     throw new Error(`Can't apply operator ${operator}`)
