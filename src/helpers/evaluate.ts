@@ -5,7 +5,7 @@ import { applyBinaryOperator, applyUnaryOperator } from './applyOperator'
 import { isNodeOfType } from './isNodeOfType'
 import { addStackToError } from './logResult'
 
-export const evaluate = <T extends AstNodeType>(
+export const evaluate = async <T extends AstNodeType>(
     expression: Ast<T>,
     enviroment: Enviroment
 ) => {
@@ -20,23 +20,23 @@ export const evaluate = <T extends AstNodeType>(
     } else if (isNodeOfType(expression, AstNodeType.unaryOperator)) {
         return applyUnaryOperator(
             expression.operator,
-            evaluate(expression.body, enviroment)
+            await evaluate(expression.body, enviroment)
         )
     } else if (isNodeOfType(expression, AstNodeType.binaryOperator)) {
-        return applyBinaryOperator(
+        return await applyBinaryOperator(
             expression.operator,
-            evaluate(expression.left, enviroment),
-            evaluate(expression.right, enviroment)
+            await evaluate(expression.left, enviroment),
+            await evaluate(expression.right, enviroment)
         )
     } else if (isNodeOfType(expression, AstNodeType.anonymousFunction)) {
         return createFunction(enviroment, expression, evaluate)
     } else if (isNodeOfType(expression, AstNodeType.conditional)) {
-        const condition = evaluate(expression.condition, enviroment)
+        const condition = await evaluate(expression.condition, enviroment)
 
         if (condition) {
-            return evaluate(expression.then, enviroment)
+            return await evaluate(expression.then, enviroment)
         } else if (expression.else) {
-            return evaluate(expression.else, enviroment)
+            return await evaluate(expression.else, enviroment)
         }
 
         return false
@@ -46,18 +46,25 @@ export const evaluate = <T extends AstNodeType>(
         let result = 0
 
         for (const line of expression.program) {
-            result = evaluate(line, scope)
+            result = await evaluate(line, scope)
         }
 
         return result
     } else if (isNodeOfType(expression, AstNodeType.functionCall)) {
-        const target = evaluate(expression.target, enviroment) as Function
-        const _arguments = expression.arguments.map(argument =>
-            evaluate(argument, enviroment)
-        )
+        const target = await evaluate(expression.target, enviroment)
+
+        if (!(target instanceof Function)) {
+            throw new Error(`${target} is not a function`)
+        }
+
+        const _arguments: unknown[] = []
+
+        for (const argument of Array.from(expression.arguments)) {
+            _arguments.push(await evaluate(argument, enviroment))
+        }
 
         try {
-            return target.apply(null, _arguments)
+            return target(..._arguments)
         } catch (error) {
             throw new Error(addStackToError(error.message as string, target))
         }
@@ -70,7 +77,7 @@ export const evaluate = <T extends AstNodeType>(
 
         return enviroment.set(
             expression.left.value,
-            evaluate(expression.right, enviroment)
+            await evaluate(expression.right, enviroment)
         )
     } else if (isNodeOfType(expression, AstNodeType.define)) {
         let currentReturn: unknown = false
@@ -78,7 +85,7 @@ export const evaluate = <T extends AstNodeType>(
         for (const { name, constant, initialValue } of expression.variables) {
             currentReturn = enviroment.define(name, {
                 constant,
-                value: evaluate(initialValue, enviroment)
+                value: await evaluate(initialValue, enviroment)
             })
         }
 

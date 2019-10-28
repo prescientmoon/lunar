@@ -13,7 +13,7 @@ export const interpret = async (path: string, command: LunarCommand) => {
     const ast = await createAst(reader, command)
 
     try {
-        evaluate(ast, createStandardEnviroment(reader))
+        await evaluate(ast, createStandardEnviroment(reader))
     } catch (error) {
         reader.endWith(error.message)
     }

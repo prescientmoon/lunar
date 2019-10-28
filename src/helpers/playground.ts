@@ -1,46 +1,45 @@
 import { LunarSourceReader } from '../classes/FileReader'
 import { LunarCommand } from '../types/Command'
-import { createInterface } from 'readline'
+import { createInterface, Interface } from 'readline'
 import { createAst } from './createAst'
 import { evaluate } from './evaluate'
 import chalk from 'chalk'
 import { logResult } from './logResult'
 import { createStandardEnviroment } from './createStandardEnviroment'
+import { question } from './question'
 
-export const playground = (command: LunarCommand) => async () => {
-    const readline = createInterface({
-        input: process.stdin,
-        output: process.stdout
-    })
-
-    const question = (question: string) =>
-        new Promise<string>(resolve => {
-            readline.question(question, resolve)
-        })
-
+export const createPlayground = (command: LunarCommand) => () => {
     const reader = new LunarSourceReader(command.logger)
-
     const globalEnviroment = createStandardEnviroment(reader)
 
     let errors: number[] = []
 
-    while (true) {
-        const answer = await question('> ')
+    const execute = () =>
+        setTimeout(async () => {
+            const answer = await question('> ')
 
-        reader.exit = errors.push.bind(errors)
-        reader.fromString(answer)
+            if (answer === '.exit') {
+                return
+            }
 
-        const ast = await createAst(reader, command)
+            reader.exit = errors.push.bind(errors)
+            reader.fromString(answer)
 
-        if (errors.length) {
-            errors = []
-            continue
-        }
+            const ast = await createAst(reader, command)
 
-        try {
-            logResult(evaluate(ast, globalEnviroment))
-        } catch (err) {
-            console.error(chalk.red(err))
-        }
-    }
+            if (errors.length) {
+                errors = []
+                return execute()
+            }
+
+            try {
+                logResult(await evaluate(ast, globalEnviroment))
+            } catch (err) {
+                console.error(chalk.red(err))
+            }
+
+            execute()
+        }, 0)
+
+    return execute()
 }

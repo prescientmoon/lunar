@@ -31,7 +31,7 @@ export const applyUnaryOperator = (operator: unaryOperator, body: unknown) => {
     throw new Error(`Can't apply operator ${operator}`)
 }
 
-export const applyBinaryOperator = (
+export const applyBinaryOperator = async (
     operator: operatorIds,
     left: unknown,
     right: unknown
@@ -79,7 +79,7 @@ export const applyBinaryOperator = (
             throw new Error(`Cannot call ${right}`)
         }
 
-        return right(left)
+        return await right(left)
     }
 
     throw new Error(`Can't apply operator ${operator}`)

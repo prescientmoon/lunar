@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import { LunarCommand } from './types/Command'
 import { CommandLogger } from './classes/CommandLogger'
 import { interpret } from './helpers/interpret'
-import { playground } from './helpers/playground'
+import { createPlayground } from './helpers/playground'
 
 const program = new Command() as LunarCommand
 
@@ -33,6 +33,8 @@ program
         interpret(entry, program)
     })
 
-program.command('playground').action(playground(program))
+const playground = createPlayground(program)
+
+program.command('playground').action(playground)
 
 program.parse(process.argv)

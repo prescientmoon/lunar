@@ -9,7 +9,7 @@ export const createFunction = (
     evaluate: (
         _expression: typeof expression.body,
         scope: Enviroment
-    ) => unknown
+    ) => Promise<unknown>
 ) => (...params: unknown[]) => {
     const names = expression.arguments
     const scope = enviroment.extend()

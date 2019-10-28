@@ -1,0 +1,17 @@
+const guess = fn (min, max) {
+    println('Welcome to my game! Write "exit" to exit:)')
+
+    const a = randomInt(min, max), b = randomInt(min, max), result = a * b
+
+    const answer = concat(a,' * ' ,b ,' = ') |> question
+
+    if answer == 'exit' then exit(0)
+
+    if answer |> int == result 
+        then println('You were right!')
+        else concat('You were wrong... The correct answer was: ', result) |> println 
+
+    guess(min, max + 1)
+}
+
+guess(2, 10)
