@@ -1,6 +1,5 @@
 import { LunarSourceReader } from '../classes/FileReader'
 import { LunarCommand } from '../types/Command'
-import { createInterface, Interface } from 'readline'
 import { createAst } from './createAst'
 import { evaluate } from './evaluate'
 import chalk from 'chalk'
@@ -9,6 +8,10 @@ import { createStandardEnviroment } from './createStandardEnviroment'
 import { question } from './question'
 
 export const createPlayground = (command: LunarCommand) => () => {
+    console.log(
+        chalk.yellow(`Welcome to the lunar playground! Use '.exit' to exit.`)
+    )
+
     const reader = new LunarSourceReader(command.logger)
     const globalEnviroment = createStandardEnviroment(reader)
 

@@ -1,0 +1,30 @@
+const 
+    printTime = fn (from) concat(from, ': ', now()) |> println,
+    a = fn () {
+        sleep(1000)
+        printTime('a')
+        sleep(1000)
+        printTime('a')
+    }, 
+    b = fn () {
+        sleep(500)
+        printTime('b')
+        sleep(500)
+        printTime('b')
+        sleep(500)
+        printTime('b')
+        sleep(500)
+        printTime('b')
+    }
+
+const mode = question('
+    What mode do you want to run the functions in?
+     (p for parallel or s for sequential)
+')
+
+if mode == 'p' then
+    parallel(a, b)
+else if mode == 's' then {
+    a()
+    b()
+} else concat('Mode ', mode, ' doen\'t exist yet!') |> println
