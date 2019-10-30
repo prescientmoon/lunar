@@ -56,6 +56,7 @@ export class Enviroment {
         const variable = scope ? scope.variables[name] : this.variables[name]
 
         if (!variable.constant) {
+            variable.value = value
             return value
         }
 

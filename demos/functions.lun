@@ -1,4 +1,4 @@
-foo = fn (bar) {
+const foo = fn (bar) {
     bar * 2
 }
 
