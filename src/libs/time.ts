@@ -6,7 +6,10 @@ import { performance } from 'perf_hooks'
 export const time = (enviroemnt: Enviroment) => {
     const start = performance.now()
 
-    enviroemnt.defineConst('sleep', withMetadata(['seconds'], sleep))
+    enviroemnt.defineConst(
+        'sleep',
+        withMetadata(['seconds'], (time: number) => sleep(time * 1000))
+    )
     enviroemnt.defineConst(
         'now',
         withMetadata([], () => performance.now() - start)

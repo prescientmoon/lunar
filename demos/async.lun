@@ -1,19 +1,19 @@
 const 
     printTime = fn (from) concat(from, ': ', now()) |> println,
     a = fn () {
-        sleep(1000)
+        sleep(1)
         printTime('a')
-        sleep(1000)
+        sleep(1)
         printTime('a')
     }, 
     b = fn () {
-        sleep(500)
+        sleep(0.5)
         printTime('b')
-        sleep(500)
+        sleep(0.5)
         printTime('b')
-        sleep(500)
+        sleep(0.5)
         printTime('b')
-        sleep(500)
+        sleep(0.5)
         printTime('b')
     }
 
