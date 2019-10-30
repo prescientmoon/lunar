@@ -3,7 +3,7 @@
         "module": "commonjs",
         "esModuleInterop": true,
         "lib": ["esnext"],
-        "target": "esnext",
+        "target": "es5",
         "strictNullChecks": true,
         "strictBindCallApply": true
     }
