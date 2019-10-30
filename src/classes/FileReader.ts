@@ -98,7 +98,7 @@ export class LunarSourceReader {
         const spaces = this.position[1] - 1
 
         const errorMessage = [
-            `${message} (${this.position[0] - 1}:${this.position[1]})`,
+            `${message} (${this.position[0]}:${this.position[1]})`,
             `${this.source.split('\n')[this.position[0]]}`,
             `${' '.repeat(spaces)}^`
         ].join('\n')

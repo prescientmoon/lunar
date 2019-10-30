@@ -28,7 +28,9 @@ export const createPlayground = (command: LunarCommand) => () => {
             reader.exit = errors.push.bind(errors)
             reader.fromString(answer)
 
-            const ast = await createAst(reader, command)
+            const ast = await createAst(reader, command).catch(error =>
+                reader.endWith(error.message)
+            )
 
             if (errors.length) {
                 errors = []
@@ -36,7 +38,11 @@ export const createPlayground = (command: LunarCommand) => () => {
             }
 
             try {
-                logResult(await evaluate(ast, globalEnviroment))
+                if (ast) {
+                    logResult(await evaluate(ast, globalEnviroment))
+                } else {
+                    throw new Error('Failed to evaluate ast')
+                }
             } catch (err) {
                 console.error(chalk.red(err))
             }

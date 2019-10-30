@@ -7,10 +7,17 @@ import {
     operatorIds,
     operatorImportance,
     unary,
-    unaryOperator
+    unaryOperator,
+    operators
 } from '../constants/operators'
 import { Token } from './Token'
 import { isTokenOfType } from '../helpers/isTokenOfType'
+import { DelimitedParsingConfig, Skippable } from '../types/Skippable'
+import {
+    functionArgumentsRules,
+    variableDeclarationRules,
+    programRules
+} from '../constants/punctuationRules'
 
 export class AstBuilder {
     private static falseNode: Ast<AstNodeType.boolean> = {
@@ -25,52 +32,56 @@ export class AstBuilder {
      *
      * @param start The punctuation to start the sequence.
      * @param stop The puncuation to stop everything.
-     * @param separator The thing which separates values.
+     * @param separators The thing which separates values.
      * @param parser Function to parse individual values.
      */
     private delimited<T>(
-        start: punctuation,
-        stop: punctuation,
-        separator: punctuation,
+        { start, stop, separator, stopEarly }: DelimitedParsingConfig,
         parser: () => T,
-        optional = false
+        until = () => this.input.eof()
     ) {
         const results: T[] = []
 
         // skip initial delimiter
-        this.skipPunctuation(start)
+        const skippedStart = this.trySkippingPunctuation(start)
 
         // we don't want stuff like (, 1, 2, 3) to happen
         let first = true
 
-        while (!this.input.eof()) {
-            if (this.isPunctuation(stop)) {
+        while (!until()) {
+            if (skippedStart && this.canBeSkipped(stop)) {
                 break
             }
 
             if (first) {
                 first = false
-            } // allow skipping separators
-            else if ((optional && this.isPunctuation(separator)) || !optional) {
-                this.skipPunctuation(separator)
+            } else {
+                const canBeSkipped = this.canBeSkipped(separator)
+
+                if (canBeSkipped) {
+                    this.skipPunctuation(separator!.value)
+                } else if (separator && separator.required && stopEarly) {
+                    break
+                }
             }
 
-            // the last separator can be missing
-            if (this.isPunctuation(stop)) {
+            if (skippedStart && this.canBeSkipped(stop)) {
                 break
             }
 
             results.push(parser())
         }
 
-        // skip final delimiter
-        this.skipPunctuation(stop)
+        if (skippedStart) {
+            this.trySkippingPunctuation(stop)
+        }
 
         return results
     }
 
     private isPunctuation(character: punctuation) {
         const token = this.input.peek()
+
         return (
             token &&
             token.type === tokens.punctuation &&
@@ -88,7 +99,7 @@ export class AstBuilder {
         )
     }
 
-    private isOperator(operator?: operatorIds): operator is operatorIds {
+    private isOperator(operator?): boolean {
         const token = this.input.peek()
 
         return Boolean(
@@ -107,6 +118,28 @@ export class AstBuilder {
         )
     }
 
+    private canBeSkipped(skippable?: Skippable): skippable is Skippable {
+        if (!skippable) {
+            return false
+        }
+
+        if (this.isPunctuation(skippable.value)) {
+            return true
+        }
+
+        return false
+    }
+
+    private trySkippingPunctuation(skippable?: Skippable) {
+        const canBeSkiped = this.canBeSkipped(skippable)
+
+        if (canBeSkiped || (skippable && skippable.required)) {
+            this.skipPunctuation(skippable!.value)
+        }
+
+        return canBeSkiped
+    }
+
     private skipPunctuation(character: punctuation) {
         if (this.isPunctuation(character)) {
             this.input.next()
@@ -123,11 +156,15 @@ export class AstBuilder {
         }
     }
 
-    private unexpected(token: Token) {
+    private unexpected(token: Token | null) {
+        if (token === null) {
+            return this.input.croak(`Cnnot read past end of file`)
+        }
+
         this.input.croak(
-            `Unexpected token of type ${token.typeName()}. Recived ${JSON.stringify(
+            `Unexpected token of type ${token.typeName()}. Recived ${token.name()}: ${
                 token.value
-            )}`
+            }`
         )
     }
 
@@ -135,7 +172,9 @@ export class AstBuilder {
         if (this.isOperator(operator)) {
             this.input.next()
         } else {
-            this.input.croak(`Expecting operator: "${operator}"`)
+            this.input.croak(
+                `Expecting operator: "${operators[operator].value}"`
+            )
         }
     }
 
@@ -185,18 +224,16 @@ export class AstBuilder {
             type: AstNodeType.functionCall,
             target,
             arguments: this.delimited<Ast>(
-                punctuation.openParanthesis,
-                punctuation.closeParanthesis,
-                punctuation.comma,
+                functionArgumentsRules,
                 this.parseExpression.bind(this)
             )
         }
     }
 
     private parseVariableName() {
-        const token = this.input.next()!
+        const token = this.input.next()
 
-        if (!isTokenOfType(token, tokens.variable)) {
+        if (!isTokenOfType(token!, tokens.variable)) {
             this.input.croak('Expecting variable name')
             return ''
         }
@@ -246,16 +283,22 @@ export class AstBuilder {
         return {
             type: AstNodeType.anonymousFunction,
             arguments: this.delimited(
-                punctuation.openParanthesis,
-                punctuation.closeParanthesis,
-                punctuation.comma,
+                functionArgumentsRules,
                 this.parseVariableName.bind(this)
             ),
             body: this.parseExpression()
         }
     }
 
-    private parseDefinition() {
+    private parseConstant() {
+        const name = this.parseVariableName()
+
+        this.skipOperator(operatorIds.assign)
+
+        return { name, initialValue: this.parseExpression() }
+    }
+
+    private parseDeclaration() {
         const name = this.parseVariableName()
 
         // Check if this has a value
@@ -281,12 +324,17 @@ export class AstBuilder {
         // skip declare or const depenging on the variable type
         this.skipKeyword(constant ? keywords.const : keywords.declare)
 
-        const pairs = [this.parseDefinition()]
+        const parser = (constant
+            ? this.parseConstant
+            : this.parseDeclaration
+        ).bind(this)
+
+        const pairs = this.delimited(variableDeclarationRules, parser)
 
         while (this.isPunctuation(punctuation.comma)) {
             this.skipPunctuation(punctuation.comma)
 
-            pairs.push(this.parseDefinition())
+            pairs.push(parser())
         }
 
         return {
@@ -300,11 +348,8 @@ export class AstBuilder {
 
     public parseProgram(): Ast {
         const program = this.delimited<Ast>(
-            punctuation.openBracket,
-            punctuation.closeBracket,
-            punctuation.semicolon,
-            this.parseExpression.bind(this),
-            true
+            programRules,
+            this.parseExpression.bind(this)
         )
 
         if (program.length === 0) {
@@ -319,7 +364,7 @@ export class AstBuilder {
         }
     }
 
-    private parseAtom() {
+    public parseAtom() {
         return this.maybeCall(() => {
             if (this.isPunctuation(punctuation.openParanthesis)) {
                 this.input.next()
@@ -348,12 +393,13 @@ export class AstBuilder {
                 return this.parseUnary()
             }
 
-            const token = this.input.next()!
+            const token = this.input.next()
 
             if (
-                token.type === tokens.variable ||
-                token.type === tokens.number ||
-                token.type === tokens.string
+                token !== null &&
+                (token.type === tokens.variable ||
+                    token.type === tokens.number ||
+                    token.type === tokens.string)
             ) {
                 return token.toAstNode()
             }
@@ -364,7 +410,7 @@ export class AstBuilder {
         })
     }
 
-    private parseExpression(): Ast {
+    public parseExpression(): Ast {
         return this.maybeCall(() => this.maybeBinary(this.parseAtom(), -1))
     }
 }

@@ -202,7 +202,9 @@ export class LunarTokenReader {
         const token = this.current
         this.current = null
 
-        return token || this.readNext()
+        const result = token || this.readNext()
+
+        return result
     }
 
     public eof() {
