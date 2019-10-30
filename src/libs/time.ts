@@ -10,6 +10,7 @@ export const time = (enviroemnt: Enviroment) => {
         'sleep',
         withMetadata(['seconds'], (time: number) => sleep(time * 1000))
     )
+
     enviroemnt.defineConst(
         'now',
         withMetadata([], () => performance.now() - start)

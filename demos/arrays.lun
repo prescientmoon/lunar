@@ -1,10 +1,10 @@
-declare 
+const
     null = fn () {},
     tail = fn () {
-        declare 
+        declare
             item = null,
-            next,
-            set = fn (index, value) { 
+            next
+        const set = fn (index, value) { 
                 if !next then next = tail()
 
                 if index == 0 
@@ -24,8 +24,8 @@ declare
             item,
             next = if length == 1 
                 then tail()
-                else array(length - 1),
-            set = fn (index, value) 
+                else array(length - 1)
+            const set = fn (index, value) 
                 if index == 0 
                     then item = value 
                     else next(false)(index - 1, value),
@@ -40,7 +40,7 @@ declare
     getter = fn (array) fn (index) array(true)(index),
     setter = fn (array) fn (index, value) array(false)(index, value),
     pusher = fn (array) {
-        declare 
+        const 
             get = getter(array),
             set = setter(array),
             push = fn (index, value) {
@@ -52,10 +52,10 @@ declare
         fn (value) push (0, value)
     },
     iterator = fn (array) {
-        declare
+        const
             get = getter(array),
             iterate = fn (index, callback) {
-                declare item = get(index)
+                const item = get(index)
 
                 if item != null then {
                     callback(item)
@@ -66,19 +66,20 @@ declare
         fn (callback) iterate(0, callback)
     }
 
-declare 
-    test = array(4), 
+const 
+    test = array(2), 
     set = setter(test), 
     iterate = iterator(test),
     push = pusher(test)
 
 set(0, 4)
-set(2, 9)
+set(1, 7)
+iterate(println)
 
-iterate(print)
+const num = randomInt(0 100)
 
-print('pushing:')
-push(10)
+println('pushing: ', num)
+num |> push
 
-iterate(print)
+iterate(println)
 

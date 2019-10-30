@@ -8,6 +8,8 @@ export interface Variable {
 export class Enviroment {
     public variables: Record<string, Variable>
 
+    private variablePrefix = '___'
+
     public constructor(
         public parent: Enviroment | null,
         public input: LunarSourceReader
@@ -15,6 +17,10 @@ export class Enviroment {
         this.variables = Object.create(
             this.parent ? this.parent.variables : Object
         )
+    }
+
+    private prependPrefix(name: string) {
+        return this.variablePrefix + name
     }
 
     public extend() {
@@ -25,7 +31,7 @@ export class Enviroment {
         let scope: Enviroment = this
 
         while (scope) {
-            if (scope.variables.hasOwnProperty(name)) {
+            if (scope.variables.hasOwnProperty(this.prependPrefix(name))) {
                 return scope
             }
 
@@ -38,8 +44,10 @@ export class Enviroment {
     }
 
     public get(name: string) {
-        if (name in this.variables) {
-            return this.variables[name].value
+        const pname = this.prependPrefix(name)
+
+        if (pname in this.variables) {
+            return this.variables[pname].value
         }
 
         this.input.endWith(`Undefined variable ${name}`)
@@ -47,13 +55,14 @@ export class Enviroment {
 
     public set(name: string, value: unknown) {
         const scope = this.lookup(name)
+        const pname = this.prependPrefix(name)
 
         // let's not allow defining globals from a nested environment
         if (!scope && this.parent) {
             this.input.endWith(`Cannot defined global variable ${name}`)
         }
 
-        const variable = scope ? scope.variables[name] : this.variables[name]
+        const variable = scope ? scope.variables[pname] : this.variables[pname]
 
         if (!variable.constant) {
             variable.value = value
@@ -64,11 +73,13 @@ export class Enviroment {
     }
 
     public define(name: string, variable: Variable) {
-        if (this.variables.hasOwnProperty(name)) {
+        const pname = this.prependPrefix(name)
+
+        if (this.variables.hasOwnProperty(pname)) {
             return this.input.endWith(`Variable ${name} was already declared!`)
         }
 
-        this.variables[name] = variable
+        this.variables[pname] = variable
 
         return variable.value
     }
