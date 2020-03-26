@@ -6,6 +6,7 @@ import chalk from 'chalk'
 import { logResult } from './logResult'
 import { createStandardEnviroment } from './createStandardEnviroment'
 import { question } from './question'
+import { replCommands } from '../constants/replCommands'
 
 export const createPlayground = (command: LunarCommand) => () => {
     console.log(
@@ -18,11 +19,16 @@ export const createPlayground = (command: LunarCommand) => () => {
     let errors: number[] = []
 
     const execute = () =>
-        setTimeout(async () => {
+        Promise.resolve().then(async () => {
+            errors = []
+
             const answer = await question('> ')
 
-            if (answer === '.exit') {
-                return
+            for (const { value, exec } of replCommands) {
+                if (answer.trim() === value) {
+                    exec()
+                    return execute()
+                }
             }
 
             reader.exit = errors.push.bind(errors)
@@ -33,7 +39,6 @@ export const createPlayground = (command: LunarCommand) => () => {
             )
 
             if (errors.length) {
-                errors = []
                 return execute()
             }
 
@@ -47,8 +52,8 @@ export const createPlayground = (command: LunarCommand) => () => {
                 console.error(chalk.red(err))
             }
 
-            execute()
-        }, 0)
+            return execute()
+        })
 
     return execute()
 }
