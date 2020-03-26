@@ -26,6 +26,8 @@ export const applyUnaryOperator = (operator: unaryOperator, body: unknown) => {
         return -toNumber(body)
     } else if (operator === operatorIds.not) {
         return !body
+    } else if (operator === operatorIds.add) {
+        return toNumber(body)
     }
 
     throw new Error(`Can't apply operator ${operator}`)

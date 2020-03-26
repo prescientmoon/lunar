@@ -33,7 +33,8 @@ export enum operatorIds {
 export const operators: Record<operatorIds, Operator> = {
     [operatorIds.add]: {
         value: '+',
-        binary: true
+        binary: true,
+        unary: true
     },
     [operatorIds.and]: {
         value: '&&',
@@ -123,9 +124,13 @@ export const maxOperatorLength = Math.max(
     ...operatorValues.map(operator => operator.value.length)
 )
 
-export const unary = [operatorIds.not, operatorIds.substract] as const
+export const unary = [
+    operatorIds.not,
+    operatorIds.substract,
+    operatorIds.add
+] as const
 
-export type unaryOperator = operatorIds.not | operatorIds.substract
+export type unaryOperator = typeof unary[number]
 
 const sequence = new ImportanceSequence()
 
