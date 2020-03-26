@@ -10,7 +10,9 @@ import { replCommands } from '../constants/replCommands'
 
 export const createPlayground = (command: LunarCommand) => () => {
     console.log(
-        chalk.yellow(`Welcome to the lunar playground! Use '.exit' to exit.`)
+        chalk.yellow(
+            `Welcome to the lunar playground! Use ':help' to see a list of all the available commands.`
+        )
     )
 
     const reader = new LunarSourceReader(command.logger)
