@@ -77,7 +77,7 @@ declare a = 1, b = 2, c = 3
 
 ```
 
-declare a = 1, b = 2, c = 3
+const a = 1, b = 2, c = 3
 
 ```
 
@@ -155,4 +155,25 @@ const a = fn (a b) a + b
 const a = fn (a, b) a + b
 ```
 
-more: TODO
+## Async 
+In lunar everything looks sync by default but is async under the hood:
+
+For example:
+```
+sleep(0.5)
+println("a")
+sleep(0.5)
+println("b")
+```
+will wait half a second, print `a`, wait another half a second and print `b`. 
+
+## Running stuff in parallel
+You can run stuff in parallel with the `parallel` function:
+
+For example:
+```
+const waitAndPrint = fn (time msg) fn () { sleep(time) msg |> println }
+
+parallel(waitAndPrint(0.5 "a") waitAndPrint(1 "b"))
+```
+will print "a" after half a second and "b" after 1 second
