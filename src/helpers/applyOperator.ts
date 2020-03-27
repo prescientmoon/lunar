@@ -1,7 +1,4 @@
 import { operatorIds, unaryOperator } from '../constants/operators'
-import { Enviroment } from '../classes/Enviroment'
-import { Ast, AstNodeBody, AstNodeType } from '../types/Ast'
-import { isNodeOfType } from './isNodeOfType'
 
 const toNumber = (x: unknown) => {
     if (typeof x !== 'number') {

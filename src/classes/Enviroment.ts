@@ -1,4 +1,5 @@
 import { LunarSourceReader } from './FileReader'
+import { withMetadata, metadata } from '../types/withMetadata'
 
 export interface Variable {
     value: unknown
@@ -47,10 +48,21 @@ export class Enviroment {
         const pname = this.prependPrefix(name)
 
         if (pname in this.variables) {
-            return this.variables[pname].value
+            // attach name if its a function
+            const value = this.variables[pname].value
+
+            if (value instanceof Function) {
+                const _function = value as withMetadata<Function>
+                _function[metadata] = {
+                    ..._function[metadata],
+                    variableName: name
+                }
+            }
+
+            return value
         }
 
-        this.input.endWith(`Undefined variable ${name}`)
+        throw new Error(`Undefined variable ${name}`)
     }
 
     public set(name: string, value: unknown) {
@@ -59,7 +71,7 @@ export class Enviroment {
 
         // let's not allow defining globals from a nested environment
         if (!scope && this.parent) {
-            this.input.endWith(`Cannot defined global variable ${name}`)
+            throw new Error(`Cannot defined global variable ${name}`)
         }
 
         const variable = scope ? scope.variables[pname] : this.variables[pname]
@@ -69,14 +81,14 @@ export class Enviroment {
             return value
         }
 
-        return this.input.endWith(`Cannot assign to constant variable ${name}`)
+        throw new Error(`Cannot assign to constant variable ${name}`)
     }
 
     public define(name: string, variable: Variable) {
         const pname = this.prependPrefix(name)
 
         if (this.variables.hasOwnProperty(pname)) {
-            return this.input.endWith(`Variable ${name} was already declared!`)
+            throw new Error(`Variable ${name} was already declared!`)
         }
 
         this.variables[pname] = variable

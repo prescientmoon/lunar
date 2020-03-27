@@ -64,7 +64,7 @@ export const evaluate = async <T extends AstNodeType>(
         }
 
         try {
-            return target(..._arguments)
+            return await target(..._arguments)
         } catch (error) {
             throw new Error(addStackToError(error.message as string, target))
         }
