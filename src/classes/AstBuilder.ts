@@ -382,13 +382,15 @@ export class AstBuilder {
             } else if (this.isKeyword(keywords.if)) {
                 return this.parseIf()
             } else if (
-                this.isKeyword(keywords.declare) ||
-                this.isKeyword(keywords.const)
+                [keywords.declare, keywords.const]
+                    .map(this.isKeyword)
+                    .includes(true)
             ) {
                 return this.parseDefinitions()
             } else if (
-                this.isKeyword(keywords.true) ||
-                this.isKeyword(keywords.false)
+                [keywords.true, keywords.false]
+                    .map(this.isKeyword)
+                    .includes(false)
             ) {
                 return this.parseBoolean()
             } else if (this.isKeyword(keywords.fn)) {
@@ -402,9 +404,9 @@ export class AstBuilder {
 
             if (
                 token !== null &&
-                (token.type === tokens.variable ||
-                    token.type === tokens.number ||
-                    token.type === tokens.string)
+                [tokens.variable, tokens.number, tokens.string].includes(
+                    token.type
+                )
             ) {
                 return token.toAstNode()
             }
