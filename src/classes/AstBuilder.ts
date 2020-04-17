@@ -12,13 +12,18 @@ import {
 } from '../constants/operators'
 import { Token } from './Token'
 import { isTokenOfType } from '../helpers/isTokenOfType'
-import { DelimitedParsingConfig, Skippable } from '../types/Skippable'
+import {
+    DelimitedParsingConfig,
+    Skippable,
+    skippableValue
+} from '../types/Skippable'
 import {
     functionArgumentsRules,
     variableDeclarationRules,
     programRules
 } from '../constants/punctuationRules'
 
+const { isArray } = Array
 export class AstBuilder {
     private static falseNode: Ast<AstNodeType.boolean> = {
         type: AstNodeType.boolean,
@@ -59,8 +64,8 @@ export class AstBuilder {
                 const canBeSkipped = this.canBeSkipped(separator)
 
                 if (canBeSkipped) {
-                    this.skipPunctuation(separator!.value)
-                } else if (separator && separator.required && stopEarly) {
+                    this.skipPunctuation(skippableValue(separator!))
+                } else if (isArray(separator) && stopEarly) {
                     break
                 }
             }
@@ -123,7 +128,7 @@ export class AstBuilder {
             return false
         }
 
-        if (this.isPunctuation(skippable.value)) {
+        if (this.isPunctuation(skippableValue(skippable))) {
             return true
         }
 
@@ -133,8 +138,8 @@ export class AstBuilder {
     private trySkippingPunctuation(skippable?: Skippable) {
         const canBeSkiped = this.canBeSkipped(skippable)
 
-        if (canBeSkiped || (skippable && skippable.required)) {
-            this.skipPunctuation(skippable!.value)
+        if (canBeSkiped || (skippable && isArray(skippable))) {
+            this.skipPunctuation(skippableValue(skippable!))
         }
 
         return canBeSkiped
@@ -181,7 +186,7 @@ export class AstBuilder {
     private maybeCall(expression: () => Ast) {
         const currentExpression = expression()
 
-        return this.isPunctuation(punctuation.openParanthesis)
+        return this.isPunctuation(punctuation.openParenthesis)
             ? this.parseCall(currentExpression)
             : currentExpression
     }
@@ -366,10 +371,10 @@ export class AstBuilder {
 
     public parseAtom() {
         return this.maybeCall(() => {
-            if (this.isPunctuation(punctuation.openParanthesis)) {
+            if (this.isPunctuation(punctuation.openParenthesis)) {
                 this.input.next()
                 const expression = this.parseExpression()
-                this.skipPunctuation(punctuation.closeParanthesis)
+                this.skipPunctuation(punctuation.closeParenthesis)
 
                 return expression
             } else if (this.isPunctuation(punctuation.openBracket)) {
@@ -377,13 +382,15 @@ export class AstBuilder {
             } else if (this.isKeyword(keywords.if)) {
                 return this.parseIf()
             } else if (
-                this.isKeyword(keywords.declare) ||
-                this.isKeyword(keywords.const)
+                [keywords.declare, keywords.const]
+                    .map(this.isKeyword)
+                    .includes(true)
             ) {
                 return this.parseDefinitions()
             } else if (
-                this.isKeyword(keywords.true) ||
-                this.isKeyword(keywords.false)
+                [keywords.true, keywords.false]
+                    .map(this.isKeyword)
+                    .includes(false)
             ) {
                 return this.parseBoolean()
             } else if (this.isKeyword(keywords.fn)) {
@@ -397,9 +404,9 @@ export class AstBuilder {
 
             if (
                 token !== null &&
-                (token.type === tokens.variable ||
-                    token.type === tokens.number ||
-                    token.type === tokens.string)
+                [tokens.variable, tokens.number, tokens.string].includes(
+                    token.type
+                )
             ) {
                 return token.toAstNode()
             }

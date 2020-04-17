@@ -1,36 +1,19 @@
-import { punctuation } from './punctuation'
+import { punctuation as p } from './punctuation'
 import { DelimitedParsingConfig } from '../types/Skippable'
 
 export const functionArgumentsRules: DelimitedParsingConfig = {
-    start: {
-        value: punctuation.openParanthesis,
-        required: true
-    },
-    stop: {
-        value: punctuation.closeParanthesis,
-        required: true
-    },
-    separator: {
-        value: punctuation.comma
-    }
+    start: [p.openParenthesis, true],
+    stop: p.closeParenthesis,
+    separator: p.comma
 }
 
 export const variableDeclarationRules: DelimitedParsingConfig = {
-    separator: {
-        required: true,
-        value: punctuation.comma
-    },
+    separator: [p.comma, true],
     stopEarly: true
 }
 
 export const programRules: DelimitedParsingConfig = {
-    start: {
-        value: punctuation.openBracket
-    },
-    stop: {
-        value: punctuation.closeBracket
-    },
-    separator: {
-        value: punctuation.semicolon
-    }
+    start: p.openBracket,
+    stop: p.closeBracket,
+    separator: p.semicolon
 }

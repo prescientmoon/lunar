@@ -1,8 +1,8 @@
 export enum punctuation {
     comma = ',',
     semicolon = ';',
-    openParanthesis = '(',
-    closeParanthesis = ')',
+    openParenthesis = '(',
+    closeParenthesis = ')',
     openBracket = '{',
     closeBracket = '}',
     openSquareBracket = '[',
