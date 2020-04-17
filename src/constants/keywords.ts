@@ -11,7 +11,7 @@ export const keywordNames = [
 ] as const
 
 // Extract types from array
-export type keyword = (typeof keywordNames)[number]
+export type keyword = typeof keywordNames[number]
 
 // did this to allow me to chane keywords while still getting typechecking
 export const keywords = (Object.fromEntries(

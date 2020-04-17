@@ -8,26 +8,26 @@ import {
     operatorImportance,
     unary,
     unaryOperator,
-    operators,
+    operators
 } from '../constants/operators'
 import { Token } from './Token'
 import { isTokenOfType } from '../helpers/isTokenOfType'
 import {
     DelimitedParsingConfig,
     Skippable,
-    skippableValue,
+    skippableValue
 } from '../types/Skippable'
 import {
     functionArgumentsRules,
     variableDeclarationRules,
-    programRules,
+    programRules
 } from '../constants/punctuationRules'
 
 const { isArray } = Array
 export class AstBuilder {
     private static falseNode: Ast<AstNodeType.boolean> = {
         type: AstNodeType.boolean,
-        value: false,
+        value: false
     }
 
     public constructor(private input: LunarTokenReader) {}
@@ -214,7 +214,7 @@ export class AstBuilder {
                         right: this.maybeBinary(
                             this.parseAtom(),
                             nextOperatorImportance
-                        ),
+                        )
                     },
                     importance
                 )
@@ -231,7 +231,7 @@ export class AstBuilder {
             arguments: this.delimited<Ast>(
                 functionArgumentsRules,
                 this.parseExpression.bind(this)
-            ),
+            )
         }
     }
 
@@ -258,7 +258,7 @@ export class AstBuilder {
         const returnValue: Ast<AstNodeType.conditional> = {
             type: AstNodeType.conditional,
             condition,
-            then,
+            then
         }
 
         if (this.isKeyword(keywords.else)) {
@@ -272,7 +272,7 @@ export class AstBuilder {
     private parseBoolean(): Ast<AstNodeType.boolean> {
         return {
             type: AstNodeType.boolean,
-            value: this.input.next()!.value === keywords.true,
+            value: this.input.next()!.value === keywords.true
         }
     }
 
@@ -280,7 +280,7 @@ export class AstBuilder {
         return {
             type: AstNodeType.unaryOperator,
             operator: this.input.next()!.value as unaryOperator,
-            body: this.parseExpression(),
+            body: this.parseExpression()
         }
     }
 
@@ -291,7 +291,7 @@ export class AstBuilder {
                 functionArgumentsRules,
                 this.parseVariableName.bind(this)
             ),
-            body: this.parseExpression(),
+            body: this.parseExpression()
         }
     }
 
@@ -315,7 +315,7 @@ export class AstBuilder {
 
         return {
             name,
-            initialValue: AstBuilder.falseNode,
+            initialValue: AstBuilder.falseNode
         }
     }
 
@@ -344,10 +344,10 @@ export class AstBuilder {
 
         return {
             type: AstNodeType.define,
-            variables: pairs.map<DeclarationData>((pair) => ({
+            variables: pairs.map<DeclarationData>(pair => ({
                 ...pair,
-                constant,
-            })),
+                constant
+            }))
         }
     }
 
@@ -365,7 +365,7 @@ export class AstBuilder {
 
         return {
             type: AstNodeType.program,
-            program,
+            program
         }
     }
 
