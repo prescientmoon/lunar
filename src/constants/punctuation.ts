@@ -1,14 +1,14 @@
 export enum punctuation {
     comma = ',',
     semicolon = ';',
-    openParanthesis = '(',
-    closeParanthesis = ')',
+    openParenthesis = '(',
+    closeParenthesis = ')',
     openBracket = '{',
     closeBracket = '}',
     openSquareBracket = '[',
-    closeSquareBracket = ']'
+    closeSquareBracket = ']',
 }
 
 export const punctuationValues = Object.values(punctuation).filter(
-    current => current.length === 1
+    (current) => current.length === 1
 )
