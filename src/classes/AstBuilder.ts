@@ -44,7 +44,7 @@ export class AstBuilder {
         { start, stop, separator, stopEarly }: DelimitedParsingConfig,
         parser: () => T,
         until = () => this.input.eof()
-    ) {
+    ): T[] {
         const results: T[] = []
 
         // skip initial delimiter
@@ -104,7 +104,7 @@ export class AstBuilder {
         )
     }
 
-    private isOperator(operator?): boolean {
+    private isOperator(operator?: operatorIds): boolean {
         const token = this.input.peek()
 
         return Boolean(
@@ -228,9 +228,8 @@ export class AstBuilder {
         return {
             type: AstNodeType.functionCall,
             target,
-            arguments: this.delimited<Ast>(
-                functionArgumentsRules,
-                this.parseExpression.bind(this)
+            arguments: this.delimited<Ast>(functionArgumentsRules, () =>
+                this.parseExpression()
             )
         }
     }
@@ -287,9 +286,8 @@ export class AstBuilder {
     private parseFunction(): Ast<AstNodeType.anonymousFunction> {
         return {
             type: AstNodeType.anonymousFunction,
-            arguments: this.delimited(
-                functionArgumentsRules,
-                this.parseVariableName.bind(this)
+            arguments: this.delimited(functionArgumentsRules, () =>
+                this.parseVariableName()
             ),
             body: this.parseExpression()
         }
@@ -329,10 +327,8 @@ export class AstBuilder {
         // skip declare or const depenging on the variable type
         this.skipKeyword(constant ? keywords.const : keywords.declare)
 
-        const parser = (constant
-            ? this.parseConstant
-            : this.parseDeclaration
-        ).bind(this)
+        const parser = () =>
+            constant ? this.parseConstant() : this.parseDeclaration()
 
         const pairs = this.delimited(variableDeclarationRules, parser)
 
@@ -344,7 +340,7 @@ export class AstBuilder {
 
         return {
             type: AstNodeType.define,
-            variables: pairs.map<DeclarationData>(pair => ({
+            variables: pairs.map<DeclarationData>((pair) => ({
                 ...pair,
                 constant
             }))
@@ -352,9 +348,8 @@ export class AstBuilder {
     }
 
     public parseProgram(): Ast {
-        const program = this.delimited<Ast>(
-            programRules,
-            this.parseExpression.bind(this)
+        const program = this.delimited<Ast>(programRules, () =>
+            this.parseExpression()
         )
 
         if (program.length === 0) {
@@ -382,15 +377,13 @@ export class AstBuilder {
             } else if (this.isKeyword(keywords.if)) {
                 return this.parseIf()
             } else if (
-                [keywords.declare, keywords.const]
-                    .map(this.isKeyword)
-                    .includes(true)
+                this.isKeyword(keywords.declare) ||
+                this.isKeyword(keywords.const)
             ) {
                 return this.parseDefinitions()
             } else if (
-                [keywords.true, keywords.false]
-                    .map(this.isKeyword)
-                    .includes(false)
+                this.isKeyword(keywords.false) ||
+                this.isKeyword(keywords.true)
             ) {
                 return this.parseBoolean()
             } else if (this.isKeyword(keywords.fn)) {

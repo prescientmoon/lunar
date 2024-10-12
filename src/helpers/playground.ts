@@ -33,10 +33,10 @@ export const createPlayground = (command: LunarCommand) => () => {
                 }
             }
 
-            reader.exit = errors.push.bind(errors)
+            reader.exit = (code) => errors.push(code)
             reader.fromString(answer)
 
-            const ast = await createAst(reader, command).catch(error =>
+            const ast = await createAst(reader, command).catch((error) =>
                 reader.endWith(error.message)
             )
 

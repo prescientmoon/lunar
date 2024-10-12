@@ -6,10 +6,7 @@ import { createPlayground } from './helpers/playground'
 
 const program = new Command() as LunarCommand
 
-program
-    .version('0.0.1')
-    .description('Compiler for lunarlang')
-    .name('lunar')
+program.version('0.0.1').description('Compiler for lunarlang').name('lunar')
 
 program
     .option('-t, --tokens', 'output individual tokens', false)
@@ -22,7 +19,7 @@ program
     .command('compile <entry>')
     .alias('c')
     .option('-o, --output <path>', 'specify the path to the output')
-    .action(async (entry: string) => {
+    .action(async (_entry: string) => {
         console.log(`This command is still in development`)
     })
 

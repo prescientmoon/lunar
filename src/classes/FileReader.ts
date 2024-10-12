@@ -1,4 +1,4 @@
-import { readFile } from 'fs-extra'
+import * as fs from 'fs'
 import { CommandLogger } from './CommandLogger'
 import chalk from 'chalk'
 
@@ -47,7 +47,9 @@ export class LunarSourceReader {
         this.logger.log(entry)
 
         try {
-            this.fromString((await readFile(entry)).toString())
+            this.fromString(
+                (await fs.promises.readFile(entry, 'utf8')).toString()
+            )
         } catch {
             this.endWith(`Something went wrong while reading ${entry}`)
         }
@@ -60,16 +62,16 @@ export class LunarSourceReader {
             ${source}
         }`
             .split('\n')
-            .map(s => s.trim())
+            .map((s) => s.trim())
             .join('\n')
     }
 
     public peek(length = 1) {
-        return this.source.substr(this.index, length)
+        return this.source.slice(this.index, this.index + length)
     }
 
     public next(length = 1) {
-        const characters = this.source.substr(this.index, length)
+        const characters = this.source.slice(this.index, this.index + length)
 
         this.index += length
 

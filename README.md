@@ -1,23 +1,12 @@
 # Lunarlang
 
-Small programming language made for the [code community code jam](https://discord.gg/RFPVysw)
+Small programming language made for the code community code jam.
 
-# Installation
+## Installation
 
-```sh
-git clone https://github.com/Mateiadrielrafael/lunar
+Everything is available via a nix flake.
 
-npm install
-npm link
-```
-
-Test the installation:
-
-```sh
-lunar --version
-```
-
-# Usage
+## Usage
 
 Playground:
 
@@ -25,26 +14,26 @@ Playground:
 lunar playgruond
 ```
 
-Run the demos:
+Run the examples:
 
 ```sh
-lunar exec demos/hello.lun
-lunar exec demos/functions.lun
+lunar exec examples/hello.lun
+lunar exec examples/functions.lun
 ```
 
-# Help
+## Help
 
 ```sh
 lunar --help
 ```
 
-# Docs
+## Docs
 
-## Comments:
+### Comments:
 
 -   Any line which stats with `#` will be ignored
 
-## Expressions:
+### Expressions:
 
 -   In lunar lang most things are considered expression. An expression has one, and only one return value.
 -   A expression can be single line:
@@ -63,7 +52,7 @@ lunar --help
 } # returns 4
 ```
 
-## Declaring variables:
+### Declaring variables:
 
 -   To declare variables use the `declare` keyword followed by a list of name value pairs:
 
@@ -89,7 +78,7 @@ declare a, b = 7, c
 
 ```
 
-## Asigning to variables:
+### Asigning to variables:
 
 -   Use the `=` operator:
 
@@ -103,7 +92,7 @@ a = 4
 
 -   Note: you cannot assign to constant variables
 
-## Calling functions:
+### Calling functions:
 
 -   To call a function write the name of the function followed by a list of arguments delimited by paranthesis:
 
@@ -120,6 +109,7 @@ println('1' 2 1 + 1)
 println('1', 2, 1 + 1)
 
 ```
+
 -   You can also use the pipe operator:
 
 ```
@@ -129,15 +119,18 @@ println('1', 2, 1 + 1)
 # Same as println(1 + 1)
 ```
 
-## Declaring functions:
+### Declaring functions:
 
 -   To declare a function, use the `fn` keyword followed by the list of arguments and a expression
+
 ```
 const a = fn (a b c) a + b + c
 
 a(1 2 3) # 6
 ```
-- The return is an expression so you can add brackets:
+
+-   The return is an expression so you can add brackets:
+
 ```
 const a = fn (a b c) {
     const sum = a + b + c
@@ -147,7 +140,8 @@ const a = fn (a b c) {
 a (1 2 3) # 6
 ```
 
-- You can add commas for readability: 
+-   You can add commas for readability:
+
 ```
 const a = fn (a b) a + b
 
@@ -155,25 +149,31 @@ const a = fn (a b) a + b
 const a = fn (a, b) a + b
 ```
 
-## Async 
+### Async
+
 In lunar everything looks sync by default but is async under the hood:
 
 For example:
+
 ```
 sleep(0.5)
 println("a")
 sleep(0.5)
 println("b")
 ```
-will wait half a second, print `a`, wait another half a second and print `b`. 
 
-## Running stuff in parallel
+will wait half a second, print `a`, wait another half a second and print `b`.
+
+### Running stuff in parallel
+
 You can run stuff in parallel with the `parallel` function:
 
 For example:
+
 ```
 const waitAndPrint = fn (time msg) fn () { sleep(time) msg |> println }
 
 parallel(waitAndPrint(0.5 "a") waitAndPrint(1 "b"))
 ```
+
 will print "a" after half a second and "b" after 1 second

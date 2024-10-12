@@ -21,7 +21,7 @@ export class LunarTokenReader {
     }
 
     public isKeyword(keyword: string) {
-        return keywordNames.includes((keyword as unknown) as keyword)
+        return keywordNames.includes(keyword as unknown as keyword)
     }
 
     public isIdentifierStart(character: string) {
@@ -119,10 +119,10 @@ export class LunarTokenReader {
     }
 
     public readIdentifier() {
-        const identifier = this.readWhile(this.isIdentifier.bind(this))
+        const identifier = this.readWhile((x) => this.isIdentifier(x))
 
         return new Token(
-            keywordNames.includes((identifier as unknown) as keyword)
+            keywordNames.includes(identifier as unknown as keyword)
                 ? tokens.keyword
                 : tokens.variable,
             identifier

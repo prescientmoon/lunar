@@ -1,10 +1,8 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "esModuleInterop": true,
-        "lib": ["esnext"],
-        "target": "es5",
-        "strictNullChecks": true,
-        "strictBindCallApply": true
-    }
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "lib": "esnext"
+  }
 }

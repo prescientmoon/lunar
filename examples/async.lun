@@ -1,11 +1,11 @@
-const 
+const
     printTime = fn (from) concat(from, ': ', now()) |> println,
     a = fn () {
         sleep(1)
         printTime('a')
         sleep(1)
         printTime('a')
-    }, 
+    },
     b = fn () {
         sleep(0.5)
         printTime('b')
@@ -28,3 +28,4 @@ else if mode == 's' then {
     a()
     b()
 } else concat('Mode ', mode, ' doen\'t exist yet!') |> println
+

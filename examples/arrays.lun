@@ -4,35 +4,35 @@ const
         declare
             item = null,
             next
-        const set = fn (index, value) { 
+        const set = fn (index, value) {
                 if !next then next = tail()
 
-                if index == 0 
-                    then item = value 
+                if index == 0
+                    then item = value
                     else next(false)(index - 1, value)
             },
             get = fn (index)
                 if index == 0
                     then item
-                    else next(true)(index - 1) 
+                    else next(true)(index - 1)
 
         # Return:
         fn (_get) if _get then get else set
     },
     array = fn (length) {
-        declare 
+        declare
             item,
-            next = if length == 1 
+            next = if length == 1
                 then tail()
                 else array(length - 1)
-            const set = fn (index, value) 
-                if index == 0 
-                    then item = value 
+            const set = fn (index, value)
+                if index == 0
+                    then item = value
                     else next(false)(index - 1, value),
             get = fn (index)
                 if index == 0
                     then item
-                    else next(true)(index - 1) 
+                    else next(true)(index - 1)
 
         # Return:
         fn (_get) if _get then get else set
@@ -40,7 +40,7 @@ const
     getter = fn (array) fn (index) array(true)(index),
     setter = fn (array) fn (index, value) array(false)(index, value),
     pusher = fn (array) {
-        const 
+        const
             get = getter(array),
             set = setter(array),
             push = fn (index, value) {
@@ -61,14 +61,14 @@ const
                     callback(item)
                     iterate(index + 1, callback)
                 }
-            } 
+            }
 
         fn (callback) iterate(0, callback)
     }
 
-const 
-    test = array(2), 
-    set = setter(test), 
+const
+    test = array(2),
+    set = setter(test),
     iterate = iterator(test),
     push = pusher(test)
 

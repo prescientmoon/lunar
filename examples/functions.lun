@@ -4,3 +4,4 @@ const foo = fn (bar) {
 
 goo = 3;
 print(foo(goo))
+
